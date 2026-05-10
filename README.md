@@ -19,3 +19,4 @@ View your app in AI Studio: https://ai.studio/apps/5b522fb4-40d3-4d2f-a8d9-76eff
 3. Run the app:
    `npm run dev`
 
+Link to APP : https://dailymate-377344666894.asia-southeast2.run.app
