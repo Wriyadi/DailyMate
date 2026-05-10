@@ -1,20 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Car, Heart, Utensils, ArrowRight, Bell, Plus } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { auth, db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/utils';
 import { UserProfile, Vehicle } from '../types';
 
 export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => void }) {
   const [userName, setUserName] = useState('');
+  const { t } = useLanguage();
   
   // State Management untuk Data
-  const [vehicleData, setVehicleData] = useState<string | null>(null);
-  const [healthData, setHealthData] = useState<string | null>(null);
-  const [hobbyData, setHobbyData] = useState<string | null>(null);
+  const [vehicleData, setVehicleData] = useState<any>(null);
+  const [healthData, setHealthData] = useState<any>(null);
+  const [hobbyData, setHobbyData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // State Notifikasi
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<string[]>([]);
+
+  useEffect(() => {
+    const newNotifs: string[] = [];
+    if (vehicleData && vehicleData.nextService <= 1000) {
+      newNotifs.push(`${t('service_due')}${vehicleData.name}!`);
+    }
+    if (healthData && healthData.hasVaccineSoon) {
+      newNotifs.push(t('health_check'));
+    }
+    if (hobbyData && hobbyData.hasTaskToday) {
+      newNotifs.push(t('hobby_task'));
+    }
+    setNotifications(newNotifs);
+  }, [vehicleData, healthData, hobbyData, t]);
 
   useEffect(() => {
     const fetchDashboardData = async (uid: string) => {
@@ -30,7 +50,11 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
             const nextService = vehicle.lastServiceMileage + vehicle.maintenanceInterval;
             const diff = nextService - vehicle.odometer;
             const status = diff > 0 ? `in ${diff} km` : `${Math.abs(diff)} km overdue`;
-            setVehicleData(`${vehicle.name}: Service ${status}`);
+            setVehicleData({
+              display: `${vehicle.name}: Service ${status}`,
+              name: vehicle.name,
+              nextService: diff
+            });
           } else {
             setVehicleData(null);
           }
@@ -40,17 +64,28 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
 
         // Fetch Health Data
         try {
+          let hasVaccineSoon = false;
+          
+          const childrenQuery = query(collection(db, 'children'), where('parentId', '==', uid));
+          const childrenSnap = await getDocs(childrenQuery);
+          if (!childrenSnap.empty) {
+            hasVaccineSoon = true;
+          }
+
           const userDocRef = doc(db, 'users', uid);
           const userDoc = await getDoc(userDocRef);
+          let displayStr = null;
           if (userDoc.exists()) {
             const profile = userDoc.data() as UserProfile;
             if (profile.height && profile.weight) {
               const heightInMeters = profile.height / 100;
               const bmi = (profile.weight / (heightInMeters * heightInMeters)).toFixed(1);
-              setHealthData(`Current BMI: ${bmi} kg/m²`);
-            } else {
-              setHealthData(null);
+              displayStr = `Current BMI: ${bmi} kg/m²`;
             }
+          }
+          
+          if (displayStr || hasVaccineSoon) {
+            setHealthData({ display: displayStr, hasVaccineSoon });
           } else {
             setHealthData(null);
           }
@@ -69,7 +104,10 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
           ]);
 
           if (!petsSnap.empty || !plantsSnap.empty) {
-            setHobbyData(`Managing ${petsSnap.size} pets & ${plantsSnap.size} plants`);
+            setHobbyData({
+              display: `Managing ${petsSnap.size} pets & ${plantsSnap.size} plants`,
+              hasTaskToday: true
+            });
           } else {
             setHobbyData(null);
           }
@@ -106,48 +144,94 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
     <div className="p-6">
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900 dark:text-white leading-tight">Hello, {userName}!</h1>
-          <p className="text-stone-500 dark:text-neutral-400">Your day at a glance.</p>
+          <h1 className="text-3xl font-bold text-stone-900 dark:text-white leading-tight">{t('greeting')}, {userName}!</h1>
+          <p className="text-stone-500 dark:text-neutral-400">{t('glance')}</p>
         </div>
-        <button className="relative rounded-2xl bg-white dark:bg-neutral-900 p-3 shadow-sm active:scale-95 border border-stone-100 dark:border-neutral-800">
-          <Bell size={24} className="text-stone-600 dark:text-neutral-300" />
-          <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-neutral-900 bg-red-500"></span>
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setIsNotifOpen(!isNotifOpen)}
+            className="relative rounded-2xl bg-white dark:bg-neutral-900 p-3 shadow-sm active:scale-95 border border-stone-100 dark:border-neutral-800"
+          >
+            <Bell size={24} className="text-stone-600 dark:text-neutral-300" />
+            {notifications.length > 0 && (
+              <span className="absolute right-2 top-2 h-3 w-3 rounded-full border-2 border-white dark:border-neutral-900 bg-red-500"></span>
+            )}
+          </button>
+          
+          <AnimatePresence>
+            {isNotifOpen && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-full mt-2 w-64 md:w-80 z-50 rounded-2xl bg-white dark:bg-neutral-900 p-4 shadow-xl border border-stone-100 dark:border-neutral-800 overflow-hidden"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="font-bold text-stone-900 dark:text-white">{t('notifications')}</h3>
+                  <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    {notifications.length}
+                  </span>
+                </div>
+                
+                {notifications.length === 0 ? (
+                  <p className="text-sm font-medium text-stone-400 dark:text-neutral-500 italic py-4 text-center">
+                    {t('no_notifications')}
+                  </p>
+                ) : (
+                  <ul className="max-h-60 overflow-y-auto w-full">
+                    {notifications.map((msg, idx) => (
+                      <li 
+                        key={idx} 
+                        className="border-b border-stone-100 dark:border-neutral-800 py-3 last:border-0"
+                      >
+                        <p className="text-sm font-medium text-stone-700 dark:text-neutral-300">{msg}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 gap-4">
         <ModuleCard
           icon={<Car className="text-blue-600 dark:text-blue-400" />}
-          title="Vehicle Check"
-          description={vehicleData}
+          title={t('vehicle_check')}
+          description={vehicleData?.display}
           color="bg-blue-50 dark:bg-blue-500/10"
           onClick={() => onNavigate('vehicle')}
           isLoading={isLoading}
+          t={t}
         />
         <ModuleCard
           icon={<Heart className="text-rose-600 dark:text-rose-400" />}
-          title="Healthy Life"
-          description={healthData}
+          title={t('healthy_life')}
+          description={healthData?.display}
           color="bg-rose-50 dark:bg-rose-500/10"
           onClick={() => onNavigate('health')}
           isLoading={isLoading}
+          t={t}
         />
         <ModuleCard
           icon={<Utensils className="text-amber-600 dark:text-amber-400" />}
-          title="Smart Hobby"
-          description={hobbyData}
+          title={t('smart_hobby')}
+          description={hobbyData?.display}
           color="bg-amber-50 dark:bg-amber-500/10"
           onClick={() => onNavigate('hobby')}
           isLoading={isLoading}
+          t={t}
         />
       </div>
 
       <section className="mt-10">
-        <h2 className="mb-4 text-xl font-bold text-stone-900 dark:text-white">Quick Tips</h2>
+        <h2 className="mb-4 text-xl font-bold text-stone-900 dark:text-white">{t('quick_tips')}</h2>
         <div className="rounded-3xl bg-neutral-900 dark:bg-emerald-900/30 p-6 text-white dark:text-emerald-50 shadow-xl border border-transparent dark:border-emerald-800/50">
           <p className="mb-3 text-lg font-medium">Regular check-ups save 20% on maintenance costs.</p>
           <button className="flex items-center space-x-2 text-sm text-emerald-400 dark:text-emerald-300 font-semibold uppercase tracking-wider">
-            <span>Learn More</span>
+            <span>{t('learn_more')}</span>
             <ArrowRight size={16} />
           </button>
         </div>
@@ -156,7 +240,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
   );
 }
 
-function ModuleCard({ icon, title, description, color, onClick, isLoading }: any) {
+function ModuleCard({ icon, title, description, color, onClick, isLoading, t }: any) {
   const isEmpty = description === null || description === '';
   
   return (
@@ -178,7 +262,7 @@ function ModuleCard({ icon, title, description, color, onClick, isLoading }: any
             </div>
           ) : (
             <p className={cn("text-sm", isEmpty ? "text-stone-400 dark:text-neutral-500 italic" : "text-stone-500 dark:text-neutral-400")}>
-              {isEmpty ? 'Belum ada data. Klik untuk menambahkan' : description}
+              {isEmpty ? t('no_data') : description}
             </p>
           )}
 

@@ -4,12 +4,15 @@
  */
 
 import { AuthProvider } from './hooks/useAuth';
+import { LanguageProvider } from './contexts/LanguageContext';
 import MobileLayout from './components/Layout';
 
 export default function App() {
   return (
     <AuthProvider>
-      <MobileLayout />
+      <LanguageProvider>
+        <MobileLayout />
+      </LanguageProvider>
     </AuthProvider>
   );
 }

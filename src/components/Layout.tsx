@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Car, Heart, Settings, Utensils, Home, LogOut, Sun, Moon } from 'lucide-react';
+import { Car, Heart, Settings, Utensils, Home, LogOut, Sun, Moon, Globe } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../contexts/LanguageContext';
 import { cn } from '../lib/utils';
 import VehicleCheck from './VehicleCheck';
 import HealthyLife from './HealthyLife';
@@ -14,6 +15,7 @@ type Tab = 'home' | 'vehicle' | 'health' | 'hobby' | 'settings';
 export default function MobileLayout() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const { user, login, loading, logout } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
@@ -57,7 +59,7 @@ export default function MobileLayout() {
       case 'settings':
         return (
           <div className="p-6">
-            <h2 className="mb-6 text-2xl font-bold text-stone-900 dark:text-white">Settings</h2>
+            <h2 className="mb-6 text-2xl font-bold text-stone-900 dark:text-white">{t('settings')}</h2>
             
             <div className="rounded-3xl bg-white dark:bg-neutral-900 p-5 shadow-sm mb-6 border border-stone-100 dark:border-neutral-800">
               <div className="flex items-center space-x-4 border-b border-stone-100 dark:border-neutral-800 pb-4">
@@ -73,7 +75,7 @@ export default function MobileLayout() {
               <div className="mt-4 flex items-center justify-between">
                 <div className="flex items-center space-x-3 text-stone-700 dark:text-neutral-300">
                   {isDarkMode ? <Moon size={20} className="text-indigo-400"/> : <Sun size={20} className="text-amber-500"/>}
-                  <span className="font-semibold">Dark Mode</span>
+                  <span className="font-semibold">{t('dark_mode')}</span>
                 </div>
                 <button
                   onClick={toggleDarkMode}
@@ -90,6 +92,21 @@ export default function MobileLayout() {
                   />
                 </button>
               </div>
+
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex items-center space-x-3 text-stone-700 dark:text-neutral-300">
+                  <Globe size={20} className="text-blue-500" />
+                  <span className="font-semibold">{t('language')}</span>
+                </div>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as 'en' | 'id')}
+                  className="rounded-lg bg-stone-100 dark:bg-neutral-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="en">English</option>
+                  <option value="id">Bahasa Indonesia</option>
+                </select>
+              </div>
             </div>
 
             <button
@@ -97,7 +114,7 @@ export default function MobileLayout() {
               className="mt-3 flex w-full items-center justify-center space-x-2 text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 p-4 rounded-2xl bg-white dark:bg-neutral-900 shadow-sm border border-stone-100 dark:border-neutral-800 font-bold"
             >
               <LogOut size={20} />
-              <span>Sign Out</span>
+              <span>{t('sign_out')}</span>
             </button>
           </div>
         );
@@ -124,11 +141,11 @@ export default function MobileLayout() {
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stone-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-4 py-3 backdrop-blur-lg">
         <div className="mx-auto flex max-w-md items-center justify-around">
-          <NavButton icon={<Home />} label="Home" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
-          <NavButton icon={<Car />} label="Vehicle" active={activeTab === 'vehicle'} onClick={() => setActiveTab('vehicle')} />
-          <NavButton icon={<Heart />} label="Health" active={activeTab === 'health'} onClick={() => setActiveTab('health')} />
-          <NavButton icon={<Utensils />} label="Hobby" active={activeTab === 'hobby'} onClick={() => setActiveTab('hobby')} />
-          <NavButton icon={<Settings />} label="Misc" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+          <NavButton icon={<Home />} label={t('home')} active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+          <NavButton icon={<Car />} label={t('vehicle')} active={activeTab === 'vehicle'} onClick={() => setActiveTab('vehicle')} />
+          <NavButton icon={<Heart />} label={t('health')} active={activeTab === 'health'} onClick={() => setActiveTab('health')} />
+          <NavButton icon={<Utensils />} label={t('hobby')} active={activeTab === 'hobby'} onClick={() => setActiveTab('hobby')} />
+          <NavButton icon={<Settings />} label={t('misc')} active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
         </div>
       </nav>
     </div>
