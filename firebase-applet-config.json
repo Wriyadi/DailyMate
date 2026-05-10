@@ -1,8 +1,8 @@
 {
-  apiKey: "AIzaSyDkpmKJJKlgLYdnMbO0wjma4etWafZULjs",
-  authDomain: "elevated-patrol-470007-f4.firebaseapp.com",
-  projectId: "elevated-patrol-470007-f4",
-  storageBucket: "elevated-patrol-470007-f4.firebasestorage.app",
-  messagingSenderId: "377344666894",
-  appId: "1:377344666894:web:fab7f16b88b8cbc3ebbb5f"
-};
+  "apiKey": "AIzaSyDkpmKJJKlgLYdnMbO0wjma4etWafZULjs",
+  "authDomain": "elevated-patrol-470007-f4.firebaseapp.com",
+  "projectId": "elevated-patrol-470007-f4",
+  "storageBucket": "elevated-patrol-470007-f4.firebasestorage.app",
+  "messagingSenderId": "377344666894",
+  "appId": "1:377344666894:web:fab7f16b88b8cbc3ebbb5f"
+}
