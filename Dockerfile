@@ -1,24 +1,21 @@
-# Gunakan image Node.js yang ringan
+# Gunakan node versi 22 agar kompatibel dengan Tailwind/Vite terbaru
 FROM node:22-alpine
 
-# Set direktori kerja di dalam container
 WORKDIR /app
 
-# Salin file dependensi dan install
 COPY package*.json ./
 RUN npm install
 
-# Salin seluruh kode sumber DailyMate
 COPY . .
 
-# Build aplikasi Vite untuk production
+# BUKA PINTU UNTUK MENERIMA API KEY DARI CLOUD RUN
+ARG VITE_GEMINI_API_KEY
+ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
+
+# Build aplikasi dengan membawa API Key tersebut
 RUN npm run build
 
-# Install 'serve' untuk menjalankan file statis hasil build
 RUN npm install -g serve
-
-# Ekspos port 8080 (standar Cloud Run)
 EXPOSE 8080
 
-# Jalankan server
 CMD ["serve", "-s", "dist", "-l", "8080"]
