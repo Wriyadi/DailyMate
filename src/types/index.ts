@@ -45,6 +45,7 @@ export interface Child {
   age: number;
   height?: number;
   weight?: number;
+  bmi?: number;
   allergies?: string;
 }
 
@@ -79,5 +80,6 @@ export interface UserProfile {
   lastOvulationDate?: string;
   cuisinePreferences?: string[];
   healthRating?: number;
+  chronicDiseases?: string[];
 }
 

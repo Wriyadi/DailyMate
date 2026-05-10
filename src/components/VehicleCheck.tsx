@@ -196,6 +196,7 @@ function formatRupiah(amount: number) {
 }
 
 const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
+  const { user } = useAuth();
   const [logs, setLogs] = useState<ServiceLog[]>([]);
   const [showLogForm, setShowLogForm] = useState(false);
   const [newLog, setNewLog] = useState({ description: '', cost: '', newOdometer: vehicle.odometer.toString() });
@@ -205,39 +206,53 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
   const percentage = Math.max(0, Math.min(100, (remaining / vehicle.maintenanceInterval) * 100));
 
   useEffect(() => {
-    if (!vehicle.id) return;
-    const path = `vehicles/${vehicle.id}/serviceLogs`;
+    if (!vehicle.id || !user) return;
+    const path = `users/${user.uid}/vehicles/${vehicle.id}/serviceLogs`;
     const q = query(collection(db, path), orderBy('date', 'desc'));
     const unsub = onSnapshot(q, s => {
       setLogs(s.docs.map(d => ({ id: d.id, ...d.data() } as ServiceLog)));
     });
     return () => unsub();
-  }, [vehicle.id]);
+  }, [vehicle.id, user]);
 
   const handleAddLog = async () => {
-    if (!newLog.description || !newLog.cost) return;
-    const path = `vehicles/${vehicle.id}/serviceLogs`;
-    const finalCost = parseInt(newLog.cost) || 0;
-    const finalOdo = parseInt(newLog.newOdometer) || vehicle.odometer;
+    if (!newLog.description || !newLog.cost || !user) return;
+    
+    // 1. Validasi Tipe Data (Casting)
+    const finalCost = Number(newLog.cost) || 0;
+    const finalOdo = Number(newLog.newOdometer) || vehicle.odometer;
+    
+    // 2. Struktur Firebase Reference (Sub-collection)
+    const logPath = `users/${user.uid}/vehicles/${vehicle.id}/serviceLogs`;
 
     try {
-      await addDoc(collection(db, path), {
-        date: new Date().toISOString(),
+      // 3. Penambahan Timestamp & Update Induk
+      const { serverTimestamp } = await import('firebase/firestore');
+      
+      await addDoc(collection(db, logPath), {
+        date: new Date().toISOString(), // Fallback / Local display format if needed, but we could use serverTimestamp
+        timestamp: serverTimestamp(),
         mileage: finalOdo,
         description: newLog.description,
         costRupiah: finalCost
       });
+      
+      // Update dokumen kendaraan induknya
       const vRef = doc(db, 'vehicles', vehicle.id!);
       await updateDoc(vRef, {
          odometer: finalOdo,
          lastServiceMileage: finalOdo,
-         lastServiceDate: new Date().toISOString()
+         lastServiceDate: new Date().toISOString() // Or serverTimestamp
       });
-    } catch (e) {
-      handleFirestoreError(e, OperationType.WRITE, path);
+      
+      setShowLogForm(false);
+      setNewLog({ description: '', cost: '', newOdometer: finalOdo.toString() });
+    } catch (error: any) {
+      // 4. Error Handling
+      console.error(error);
+      alert(error.message || 'Gagal menyimpan log service');
+      handleFirestoreError(error, OperationType.WRITE, logPath);
     }
-    setShowLogForm(false);
-    setNewLog({ description: '', cost: '', newOdometer: finalOdo.toString() });
   };
 
   return (

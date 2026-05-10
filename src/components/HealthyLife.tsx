@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, orderBy, limit, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Heart, Activity, Stethoscope, Ruler, Weight, User, MessageSquare, AlertTriangle, Camera, Plus, Zap, Baby, Calendar } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -23,6 +23,10 @@ export default function HealthyLife() {
   const [caloriesBurned, setCaloriesBurned] = useState(0);
   const [caloriesConsumed, setCaloriesConsumed] = useState(0);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [chronicDiseases, setChronicDiseases] = useState<string[]>([]);
+  const [showChildForm, setShowChildForm] = useState(false);
+  const [newChild, setNewChild] = useState<Partial<Child>>({ name: '', gender: 'male', age: 0, height: 0, weight: 0, allergies: '' });
+  const [savingBio, setSavingBio] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -43,8 +47,68 @@ export default function HealthyLife() {
       if (childrenData.length > 0 && !selectedChildId) setSelectedChildId(childrenData[0].id!);
     });
 
+    const loadBiometrics = async () => {
+      try {
+        const bioDoc = await getDoc(doc(db, 'users', user.uid, 'biometrics', 'data'));
+        if (bioDoc.exists()) {
+          const data = bioDoc.data();
+          if (data.chronicDiseases) setChronicDiseases(data.chronicDiseases);
+        }
+      } catch (err) {
+        console.error("Failed to load biometrics", err);
+      }
+    };
+    loadBiometrics();
+
     return () => { unsubLogs(); unsubChildren(); };
   }, [user]);
+
+  const handleSaveBiometrics = async () => {
+    if (!user) return;
+    setSavingBio(true);
+    try {
+      const bioPath = `users/${user.uid}/biometrics/data`;
+      await setDoc(doc(db, 'users', user.uid, 'biometrics', 'data'), {
+        chronicDiseases,
+        age: profile?.age || 0,
+        height: profile?.height || 0,
+        weight: profile?.weight || 0,
+        gender: profile?.gender || 'other',
+        allergies: profile?.allergies || '',
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+      
+      await updateProfile({ chronicDiseases });
+      alert("Biometrics saved successfully!");
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, 'users/biometrics');
+    }
+    setSavingBio(false);
+  };
+
+  const handleAddChild = async () => {
+    if (!user || !newChild.name) return;
+    const path = 'children';
+    try {
+      const h = Number(newChild.height) || 0;
+      const w = Number(newChild.weight) || 0;
+      const computedBmi = calculateBMI(h, w);
+      
+      await addDoc(collection(db, path), {
+        ...newChild,
+        parentId: user.uid,
+        height: h,
+        weight: w,
+        age: Number(newChild.age) || 0,
+        bmi: computedBmi
+      });
+      setShowChildForm(false);
+      setNewChild({ name: '', gender: 'male', age: 0, height: 0, weight: 0, allergies: '' });
+      alert("Child profile added successfully!");
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, path);
+    }
+  };
 
   const calculateBMI = (h: number, w: number) => {
     if (!h || !w) return 0;
@@ -246,20 +310,26 @@ export default function HealthyLife() {
                   className="w-full bg-stone-50 rounded-xl px-3 py-2 font-bold focus:bg-white focus:ring-1 focus:ring-emerald-100 transition-all border-none"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center">
-                  <Heart size={10} className="mr-1" /> Health Rating (1-10)
+                  <Heart size={10} className="mr-1" /> Chronic Diseases
                 </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="1"
-                  max="10"
-                  placeholder="e.g. 8.5"
-                  value={profile?.healthRating || ''}
-                  onChange={e => updateProfile({ healthRating: parseFloat(e.target.value) || 0 })}
-                  className="w-full bg-stone-50 rounded-xl px-3 py-2 font-bold focus:bg-white focus:ring-1 focus:ring-emerald-100 transition-all border-none"
-                />
+                <div className="flex flex-col space-y-2 max-h-32 overflow-y-auto">
+                  {['Hypertension', 'Diabetes', 'Heart Disease', 'Asthma', 'Kidney Disease'].map(disease => (
+                    <label key={disease} className="flex items-center space-x-2 text-sm font-medium text-stone-700">
+                      <input
+                        type="checkbox"
+                        checked={chronicDiseases.includes(disease)}
+                        onChange={(e) => {
+                          if (e.target.checked) setChronicDiseases([...chronicDiseases, disease]);
+                          else setChronicDiseases(chronicDiseases.filter(d => d !== disease));
+                        }}
+                        className="rounded text-emerald-500 focus:ring-emerald-500"
+                      />
+                      <span>{disease}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
             
@@ -288,6 +358,14 @@ export default function HealthyLife() {
               </div>
             </div>
             
+            <button 
+              onClick={handleSaveBiometrics} 
+              disabled={savingBio}
+              className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-sm hover:bg-emerald-700 active:scale-95 transition-all mb-6"
+            >
+              {savingBio ? 'Saving...' : 'Save/Update Biometrics'}
+            </button>
+
             {bmi > 0 && (
               <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100/50">
                 <div className="flex items-center justify-between">
@@ -376,12 +454,44 @@ export default function HealthyLife() {
                   <p className="text-xs font-medium opacity-80">{child.age} yrs</p>
                 </button>
               ))}
-              <label className="min-w-[120px] cursor-pointer rounded-2xl border-2 border-dashed border-stone-200 flex flex-col items-center justify-center p-4 text-stone-400 hover:bg-stone-50 transition-all">
+              <label 
+                onClick={() => setShowChildForm(true)}
+                className="min-w-[120px] cursor-pointer rounded-2xl border-2 border-dashed border-stone-200 flex flex-col items-center justify-center p-4 text-stone-400 hover:bg-stone-50 transition-all"
+              >
                  <Plus size={24} />
                  <span className="text-[10px] font-bold uppercase mt-1">Add Child</span>
-                 <input type="file" className="hidden" /> {/* Adding child would be a form in real app */}
               </label>
             </div>
+
+            <AnimatePresence>
+              {showChildForm && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-4 rounded-2xl bg-stone-50 p-4 border border-stone-100 space-y-4">
+                    <h4 className="font-bold text-sm text-stone-900 border-b pb-2">New Child Profile</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input type="text" placeholder="Name" value={newChild.name || ''} onChange={e => setNewChild({...newChild, name: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="number" placeholder="Age" value={newChild.age || ''} onChange={e => setNewChild({...newChild, age: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <select value={newChild.gender || 'male'} onChange={e => setNewChild({...newChild, gender: e.target.value as any})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                      <input type="text" placeholder="Known Allergies" value={newChild.allergies || ''} onChange={e => setNewChild({...newChild, allergies: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="number" placeholder="Height (cm)" value={newChild.height || ''} onChange={e => setNewChild({...newChild, height: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="number" placeholder="Weight (kg)" value={newChild.weight || ''} onChange={e => setNewChild({...newChild, weight: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                    </div>
+                    <div className="flex space-x-2 pt-2">
+                       <button onClick={handleAddChild} className="flex-1 bg-blue-600 text-white py-2 rounded-xl text-sm font-bold shadow-sm active:scale-95">Save</button>
+                       <button onClick={() => setShowChildForm(false)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-2 rounded-xl text-sm font-bold active:scale-95">Cancel</button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {selectedChildId && (
               <div className="mt-4 space-y-6">
