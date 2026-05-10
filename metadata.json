@@ -1,0 +1,12 @@
+{
+  "name": "DailyMate",
+  "description": "An all-in-one lifestyle assistant for vehicle maintenance, health tracking, and hobby management.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "AI-powered symptom checker",
+    "Smart vehicle maintenance reminders with OCR",
+    "Heath & hobby management"
+  ]
+}

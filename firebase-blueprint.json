@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with basic info and biometric data.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "height": { "type": "number", "description": "Height in cm" },
+        "weight": { "type": "number", "description": "Weight in kg" },
+        "age": { "type": "number" },
+        "gender": { "type": "string", "enum": ["male", "female", "other"] },
+        "birthDate": { "type": "string", "format": "date-time" },
+        "allergies": { "type": "string", "description": "Known food or medication allergies" },
+        "lastOvulationDate": { "type": "string", "format": "date-time" },
+        "cuisinePreferences": { "type": "array", "items": { "type": "string" } },
+        "healthRating": { "type": "number", "description": "Float value for overall health rating" }
+      },
+      "required": ["uid", "name", "email"]
+    },
+    "Vehicle": {
+      "title": "Vehicle",
+      "description": "Information about a user's vehicle and its maintenance status.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "type": { "type": "string", "enum": ["car", "motorcycle"] },
+        "brand": { "type": "string", "description": "Vehicle make/brand" },
+        "transmission": { "type": "string", "enum": ["automatic", "manual"] },
+        "fuelType": { "type": "string", "enum": ["gasoline", "diesel"] },
+        "name": { "type": "string" },
+        "odometer": { "type": "number" },
+        "lastServiceMileage": { "type": "number" },
+        "lastServiceDate": { "type": "string", "format": "date-time" },
+        "maintenanceInterval": { "type": "number", "description": "Mileage interval for service" }
+      },
+      "required": ["ownerId", "type", "brand", "name", "odometer"]
+    },
+    "ServiceLog": {
+      "title": "Service Log",
+      "description": "Records of vehicle service history.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time" },
+        "mileage": { "type": "number" },
+        "description": { "type": "string" },
+        "costRupiah": { "type": "number", "description": "Cost in Rupiah" }
+      },
+      "required": ["date", "mileage", "description", "costRupiah"]
+    },
+    "Child": {
+      "title": "Child",
+      "description": "Pediatric health tracking for user's children.",
+      "type": "object",
+      "properties": {
+        "parentId": { "type": "string" },
+        "name": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female"] },
+        "age": { "type": "number" },
+        "height": { "type": "number" },
+        "weight": { "type": "number" },
+        "allergies": { "type": "string" }
+      },
+      "required": ["parentId", "name", "gender", "age"]
+    },
+    "HealthLog": {
+      "title": "Health Log",
+      "description": "Records for wellness tracking including BMI, cycles, symptoms, and pediatric health.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "childId": { "type": "string", "description": "Optional ID if log is for a child" },
+        "type": { "type": "string", "enum": ["bmi", "cycle", "symptom", "exercise", "meal", "vaccination", "pediatric_triage"] },
+        "rating": { "type": "number", "description": "Float rating for self-assessment" },
+        "date": { "type": "string", "format": "date-time" },
+        "note": { "type": "string" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["userId", "type", "date"]
+    },
+    "Hobby": {
+      "title": "Hobby",
+      "description": "General hobby tracking for pets and plants.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "type": { "type": "string", "enum": ["pet", "plant"] },
+        "name": { "type": "string" },
+        "species": { "type": "string" },
+        "birthDate": { "type": "string", "format": "date-time" },
+        "healthNotes": { "type": "string" },
+        "wateringSchedule": { "type": "number" },
+        "lastWatered": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "type", "name", "species"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Storage for user profile data."
+    },
+    "/vehicles/{vehicleId}": {
+      "schema": "Vehicle",
+      "description": "Storage for vehicle maintenance tracking."
+    },
+    "/vehicles/{vehicleId}/serviceLogs/{logId}": {
+      "schema": "ServiceLog",
+      "description": "Service history sub-collection for a vehicle."
+    },
+    "/healthMetrics/{metricId}": {
+      "schema": "HealthLog",
+      "description": "Storage for health and wellness tracking logs."
+    },
+    "/hobbies/{hobbyId}": {
+      "schema": "Hobby",
+      "description": "Storage for pets and plants."
+    },
+    "/users/{userId}/children/{childId}": {
+      "schema": "Child",
+      "description": "Storage for pediatric health information."
+    }
+  }
+}

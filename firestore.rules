@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- User Validation ---
+    function isValidUser(data) {
+      return data.uid == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 100;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && incoming().uid == existing().uid;
+    }
+
+    // --- Vehicle Validation ---
+    function isValidVehicle(data) {
+      return data.ownerId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.brand is string &&
+             data.type in ['car', 'motorcycle'] &&
+             data.odometer is number && data.odometer >= 0;
+    }
+
+    match /vehicles/{vehicleId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidVehicle(incoming());
+      allow update: if isSignedIn() && resource.data.ownerId == request.auth.uid && isValidVehicle(incoming()) && incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // --- Child Validation ---
+    function isValidChild(data) {
+      return data.parentId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 &&
+             data.gender in ['male', 'female'] &&
+             data.age is number;
+    }
+
+    match /children/{childId} {
+      allow list: if isSignedIn() && resource.data.parentId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.parentId == request.auth.uid;
+      allow create: if isSignedIn() && isValidChild(incoming());
+      allow update: if isSignedIn() && resource.data.parentId == request.auth.uid && isValidChild(incoming()) && incoming().parentId == existing().parentId;
+      allow delete: if isSignedIn() && resource.data.parentId == request.auth.uid;
+    }
+
+    // --- HealthLog Validation ---
+    function isValidHealthLog(data) {
+      return data.userId == request.auth.uid &&
+             data.type in ['bmi', 'cycle', 'symptom', 'exercise', 'meal', 'vaccination', 'pediatric_triage'] &&
+             data.date is string; // Validated as string size elsewhere
+    }
+
+    match /healthLogs/{logId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidHealthLog(incoming());
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidHealthLog(incoming()) && incoming().userId == existing().userId;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // --- Pet Validation ---
+    function isValidPet(data) {
+      return data.ownerId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.species is string;
+    }
+
+    match /pets/{petId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidPet(incoming());
+      allow update: if isSignedIn() && resource.data.ownerId == request.auth.uid && isValidPet(incoming()) && incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // --- Plant Validation ---
+    function isValidPlant(data) {
+      return data.ownerId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.species is string;
+    }
+
+    match /plants/{plantId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidPlant(incoming());
+      allow update: if isSignedIn() && resource.data.ownerId == request.auth.uid && isValidPlant(incoming()) && incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+  }
+}
