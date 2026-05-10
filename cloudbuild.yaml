@@ -1,0 +1,35 @@
+steps:
+  # Langkah 1: Build Container menggunakan Docker dan suntikkan argumen
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '-t'
+      - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+      - '--build-arg'
+      - 'VITE_GEMINI_API_KEY=$_VITE_GEMINI_API_KEY'
+      - '.'
+
+  # Langkah 2: Push Container ke Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'push'
+      - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+
+  # Langkah 3: Deploy ke Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_SERVICE_NAME'
+      - '--image'
+      - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+      - '--region'
+      - '$_DEPLOY_REGION'
+      - '--allow-unauthenticated'
+
+images:
+  - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
