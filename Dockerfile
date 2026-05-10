@@ -7,9 +7,14 @@ RUN npm install
 
 COPY . .
 
+# Ini menerima variabel dari argumen Cloud Build
+ARG VITE_GEMINI_API_KEY
+# Ini meneruskannya ke lingkungan build Vite
+ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
+
+RUN npm run build
+
 RUN npm install -g serve
 EXPOSE 8080
 
-# TRIK UTAMA: Pindahkan proses build ke sini!
-# Ini memastikan Vite membaca API Key dari Environment Cloud Run saat server menyala
-CMD npm run build && serve -s dist -l 8080
+CMD ["serve", "-s", "dist", "-l", "8080"]
