@@ -7,11 +7,15 @@ RUN npm install
 
 COPY . .
 
-# Ini menerima variabel dari argumen Cloud Build
+# Tangkap API Key dengan nama VITE_
 ARG VITE_GEMINI_API_KEY
-# Ini meneruskannya ke lingkungan build Vite
 ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
 
+# Tangkap juga API Key tanpa VITE_ (karena kode bawaan AI Studio mencarinya dengan nama ini)
+ARG GEMINI_API_KEY
+ENV GEMINI_API_KEY=$GEMINI_API_KEY
+
+# Build aplikasi setelah variabel di atas dimasukkan
 RUN npm run build
 
 RUN npm install -g serve
