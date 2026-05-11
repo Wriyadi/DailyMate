@@ -19,7 +19,7 @@ ENV GEMINI_API_KEY=$GEMINI_API_KEY
 RUN npm run build
 
 # Install web server sederhana untuk menyajikan file statis React/Vite
-RUN npm install -g serve
+RUN npm install --legacy-peer-deps
 
 # Ekspos port standar Google Cloud Run
 EXPOSE 8080
