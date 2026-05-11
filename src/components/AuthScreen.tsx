@@ -133,6 +133,8 @@ export default function AuthScreen() {
     } catch (err: any) {
       if (err.code === 'auth/operation-not-allowed') {
          setError('Login dengan Google belum diaktifkan di Firebase Console.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+         setError('Domain aplikasi ini belum diizinkan. Tambahkan URL ini ke "Authorized domains" di Setting Authentication Firebase.');
       } else {
          setError(err.message || 'Gagal login dengan Google.');
       }
@@ -147,6 +149,8 @@ export default function AuthScreen() {
     } catch (err: any) {
       if (err.code === 'auth/operation-not-allowed') {
          setError('Login dengan Apple belum diaktifkan di Firebase Console.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+         setError('Domain aplikasi ini belum diizinkan. Tambahkan URL ini ke "Authorized domains" di Setting Authentication Firebase.');
       } else {
          setError(err.message || 'Gagal login dengan Apple.');
       }

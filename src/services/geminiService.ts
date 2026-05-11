@@ -6,7 +6,7 @@ export const geminiService = {
   async extractOdometer(base64Image: string): Promise<number | null> {
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
             parts: [
@@ -29,7 +29,7 @@ export const geminiService = {
     try {
       const context = userData ? ` User Context: Age ${userData.age || 'unknown'}, Gender ${userData.gender || 'unknown'}, Allergies: ${userData.allergies || 'none'}.` : '';
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: "You are an advanced AI Medical Triage Assistant. Perform complex triage on user symptoms, factoring in their age, gender, and allergies. Provide in-depth preliminary health insights, potential causes, and next steps. Always include a strong disclaimer that you are an AI and the user must consult a licensed physician.",
         },
@@ -42,13 +42,55 @@ export const geminiService = {
     }
   },
 
+  async getVaccineRecommendations(childData: { name: string, age: number, gender: string }): Promise<string[]> {
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        config: {
+          systemInstruction: "You are a pediatric AI. Given a child's age, return a strict JSON array of strings containing the recommended vaccines they should have taken or should take now. For example: [\"BCG\", \"Hepatitis B (Dose 1)\", \"Polio (Dose 1)\"]. Do not include markdown formatting or extra text, just the raw JSON array. If unsure, provide standard WHO recommendations for that age.",
+        },
+        contents: `Child Name: ${childData.name}, Age: ${childData.age}, Gender: ${childData.gender}. Provide recommended vaccines as a JSON array of strings.`,
+      });
+      const text = response.text?.trim() || "[]";
+      try {
+        const parsed = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+        if (Array.isArray(parsed)) return parsed;
+        return [];
+      } catch (e) {
+        console.error("Failed to parse vaccines JSON", text);
+        return [];
+      }
+    } catch (error) {
+      console.error("Error analyzing vaccines:", error);
+      return [];
+    }
+  },
+
+  async getNutritionRecommendations(childData: { name: string, age: number, gender: string, allergies?: string }): Promise<string> {
+    try {
+      const prompt = `Child Name: ${childData.name}, Age: ${childData.age}, Gender: ${childData.gender}${childData.allergies ? `, Allergies: ${childData.allergies}` : ''}.
+Provide specific recommendations for milk and essential nutrients/vitamins for this child's development phase. Keep it actionable and concise.`;
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        config: {
+          systemInstruction: "You are a senior pediatric nutritionist AI. Recommend suitable milk and specific nutrients/vitamins based on age, gender and allergies.",
+        },
+        contents: prompt,
+      });
+      return response.text || "No insights found.";
+    } catch (error) {
+      console.error("Error analyzing child nutrition:", error);
+      return "Error analyzing nutritional needs.";
+    }
+  },
+
   async analyzeChildHealth(childData: { name: string, age: number, gender: string, symptoms?: string, allergies?: string }): Promise<string> {
     try {
       const prompt = `Child Name: ${childData.name}, Age: ${childData.age}, Gender: ${childData.gender}${childData.allergies ? `, Allergies: ${childData.allergies}` : ''}. Symptoms: ${childData.symptoms || 'none'}.
         Estimate vaccination schedules, recommend suitable milk (allergy-aware), suggest vitamins to prevent stunting, and provide AI triage for symptoms.`;
       
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: "You are a senior pediatric health AI capable of complex triage. Provide actionable, medically sound advice for child development and health triage. Include vaccination markers and nutritional recommendations.",
         },
@@ -69,7 +111,7 @@ export const geminiService = {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: `You are an advanced diagnostic AI specializing in ${type === 'pet' ? 'veterinary medicine' : 'botany and plant pathology'}. Utilize your advanced vision capabilities to perform a unified visual diagnostic if an image is provided. Detail potential diagnoses, causes, and step-by-step solutions. Keep it highly actionable.`,
         },
@@ -86,7 +128,7 @@ export const geminiService = {
     try {
       const cuisineStr = cuisinePreferences?.length ? ` Cuisines: ${cuisinePreferences.join(', ')}.` : '';
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: "You are a master gourmet chef. Recommend a personalized, healthy recipe based on user preferences and cuisine favorites. Detail precise ingredients and step-by-step instructions.",
         },
@@ -103,7 +145,7 @@ export const geminiService = {
     try {
       const prompt = `Household composition: ${inventory.pets.length} pets (${inventory.pets.join(', ')}), ${inventory.plants.length} plants (${inventory.plants.join(', ')}), ${inventory.children} children. Synthesize a smart, comprehensive restocking logic and checklist covering groceries, pet food, and plant care supplies.`;
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: "You are an advanced household operations AI. Synthesize logical, predictive restocking needs for complex households with children, pets, and plants. Output a smart, bulleted checklist.",
         },
@@ -119,7 +161,7 @@ export const geminiService = {
   async analyzeMeal(base64Image: string, gender: string = 'unknown', bmi: number | null = null): Promise<string> {
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: "You are an advanced AI nutritionist. Leverage advanced vision capabilities to precisely estimate calories and macronutrients (like carbs) from the provided meal image. Recommend specific fruits/vegetables to achieve dietary balance according to gender and BMI parameters.",
         },
@@ -142,7 +184,7 @@ export const geminiService = {
   async getHealthInsights(caloriesConsumed: number, caloriesBurned: number, bmi: number | null): Promise<string> {
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.0-flash",
+        model: "gemini-3-flash-preview",
         config: {
           systemInstruction: "You are a proactive Virtual Medical & Fitness Assistant. Perform a complex analysis comparing daily calories consumed vs burned, factoring in BMI. Deliver a concise, medically-sound, encouraging summary and actionable fitness advice.",
         },

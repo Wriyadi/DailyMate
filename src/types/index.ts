@@ -47,6 +47,9 @@ export interface Child {
   weight?: number;
   bmi?: number;
   allergies?: string;
+  givenVaccines?: string[];
+  vaccineRecommendation?: string;
+  nutritionRecommendation?: string;
 }
 
 export interface Pet {

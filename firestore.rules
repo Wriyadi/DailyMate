@@ -38,6 +38,10 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isOwner(userId) && isValidUser(incoming()) && incoming().uid == existing().uid;
+
+      match /biometrics/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // --- Vehicle Validation ---
@@ -115,6 +119,36 @@ service cloud.firestore {
       allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
       allow create: if isSignedIn() && isValidPlant(incoming());
       allow update: if isSignedIn() && resource.data.ownerId == request.auth.uid && isValidPlant(incoming()) && incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // --- Recipe Validation ---
+    function isValidRecipe(data) {
+      return data.ownerId == request.auth.uid &&
+             data.title is string && data.title.size() > 0 &&
+             data.desc is string;
+    }
+
+    match /recipes/{recipeId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidRecipe(incoming());
+      allow update: if isSignedIn() && resource.data.ownerId == request.auth.uid && isValidRecipe(incoming()) && incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // --- Household Task Validation ---
+    function isValidHouseholdTask(data) {
+      return data.ownerId == request.auth.uid &&
+             data.taskName is string && data.taskName.size() > 0 &&
+             data.frequency is string;
+    }
+
+    match /household_tasks/{taskId} {
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidHouseholdTask(incoming());
+      allow update: if isSignedIn() && resource.data.ownerId == request.auth.uid && isValidHouseholdTask(incoming()) && incoming().ownerId == existing().ownerId;
       allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
     }
   }

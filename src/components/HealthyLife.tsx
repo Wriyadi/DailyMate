@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc, orderBy, limit, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Heart, Activity, Stethoscope, Ruler, Weight, User, MessageSquare, AlertTriangle, Camera, Plus, Zap, Baby, Calendar } from 'lucide-react';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, orderBy, limit, doc, setDoc, getDoc } from 'firebase/firestore';
+import { Heart, Activity, Stethoscope, Ruler, Weight, User, MessageSquare, AlertTriangle, Camera, Plus, Zap, Baby, Calendar, Edit2, CheckCircle2, Circle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { geminiService } from '../services/geminiService';
@@ -26,6 +26,10 @@ export default function HealthyLife() {
   const [chronicDiseases, setChronicDiseases] = useState<string[]>([]);
   const [showChildForm, setShowChildForm] = useState(false);
   const [newChild, setNewChild] = useState<Partial<Child>>({ name: '', gender: 'male', age: 0, height: 0, weight: 0, allergies: '' });
+  const [editingChildId, setEditingChildId] = useState<string | null>(null);
+  const [editChildData, setEditChildData] = useState<Partial<Child>>({});
+  const [loadingVaccines, setLoadingVaccines] = useState(false);
+  const [loadingNutrition, setLoadingNutrition] = useState(false);
   const [savingBio, setSavingBio] = useState(false);
 
   useEffect(() => {
@@ -100,7 +104,8 @@ export default function HealthyLife() {
         height: h,
         weight: w,
         age: Number(newChild.age) || 0,
-        bmi: computedBmi
+        bmi: computedBmi,
+        givenVaccines: []
       });
       setShowChildForm(false);
       setNewChild({ name: '', gender: 'male', age: 0, height: 0, weight: 0, allergies: '' });
@@ -108,6 +113,79 @@ export default function HealthyLife() {
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, path);
     }
+  };
+
+  const handleStartEditChild = () => {
+    const child = children.find(c => c.id === selectedChildId);
+    if (child) {
+      setEditChildData(child);
+      setEditingChildId(child.id!);
+    }
+  };
+
+  const handleSaveEditChild = async () => {
+    if (!editingChildId) return;
+    try {
+      const h = Number(editChildData.height) || 0;
+      const w = Number(editChildData.weight) || 0;
+      const computedBmi = calculateBMI(h, w);
+      
+      await updateDoc(doc(db, 'children', editingChildId), {
+        ...editChildData,
+        height: h,
+        weight: w,
+        age: Number(editChildData.age) || 0,
+        bmi: computedBmi
+      });
+      setEditingChildId(null);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, 'children');
+    }
+  };
+
+  const handleGetVaccines = async () => {
+    const child = children.find(c => c.id === selectedChildId);
+    if (!child) return;
+    setLoadingVaccines(true);
+    const recs = await geminiService.getVaccineRecommendations({
+      name: child.name,
+      age: child.age,
+      gender: child.gender
+    });
+    if (recs && recs.length > 0) {
+      await updateDoc(doc(db, 'children', child.id!), {
+        vaccineRecommendation: JSON.stringify(recs)
+      });
+    }
+    setLoadingVaccines(false);
+  };
+
+  const handleToggleVaccine = async (vaccine: string) => {
+    const child = children.find(c => c.id === selectedChildId);
+    if (!child) return;
+    const given = child.givenVaccines || [];
+    const newGiven = given.includes(vaccine) ? given.filter(v => v !== vaccine) : [...given, vaccine];
+    await updateDoc(doc(db, 'children', child.id!), {
+      givenVaccines: newGiven
+    });
+  };
+
+  const handleGetNutrition = async () => {
+    const child = children.find(c => c.id === selectedChildId);
+    if (!child) return;
+    setLoadingNutrition(true);
+    const rec = await geminiService.getNutritionRecommendations({
+      name: child.name,
+      age: child.age,
+      gender: child.gender,
+      allergies: child.allergies
+    });
+    if (rec) {
+      await updateDoc(doc(db, 'children', child.id!), {
+        nutritionRecommendation: rec
+      });
+    }
+    setLoadingNutrition(false);
   };
 
   const calculateBMI = (h: number, w: number) => {
@@ -495,42 +573,112 @@ export default function HealthyLife() {
 
             {selectedChildId && (
               <div className="mt-4 space-y-6">
-                <div className="rounded-2xl bg-blue-50 p-4 border border-blue-100">
-                   <div className="mb-4 flex items-center space-x-2 text-blue-600">
-                     <Stethoscope size={18} />
-                     <h4 className="font-bold text-sm">Pediatric Symptoms Triage</h4>
-                   </div>
-                   <textarea
-                     value={childSymptoms}
-                     onChange={e => setChildSymptoms(e.target.value)}
-                     placeholder="e.g. Fever for 1 day, rash on arms..."
-                     className="mb-4 h-24 w-full rounded-xl bg-white p-4 text-sm outline-none focus:ring-1 focus:ring-blue-200 border-none resize-none placeholder:text-stone-300"
-                   />
-                   <button onClick={handleChildTriage} disabled={loadingAI || !childSymptoms.trim()} className="w-full rounded-xl bg-blue-600 py-3 font-bold text-white shadow-md active:scale-95 disabled:opacity-50 transition-all text-sm">
-                      {loadingAI ? 'Analyzing...' : 'Analyze Health'}
-                   </button>
+                {(() => {
+                  const child = children.find(c => c.id === selectedChildId);
+                  if (!child) return null;
+                  let parsedVaccines: string[] = [];
+                  try {
+                    if (child.vaccineRecommendation) {
+                      parsedVaccines = JSON.parse(child.vaccineRecommendation);
+                    }
+                  } catch (e) {}
 
-                   {childTriageResult && (
-                     <div className="mt-4 rounded-xl bg-white p-4 text-xs text-blue-900 leading-relaxed whitespace-pre-wrap font-medium">
-                       {childTriageResult}
-                     </div>
-                   )}
-                </div>
+                  return (
+                    <>
+                      <div className="flex items-center justify-between border-b pb-2 mb-4">
+                        <h4 className="font-bold text-stone-900 text-lg">{child.name}'s Profile</h4>
+                        <button onClick={handleStartEditChild} className="text-blue-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-blue-50">
+                          <Edit2 size={18} />
+                        </button>
+                      </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100">
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 flex items-center">
-                      <Heart size={10} className="mr-1 text-red-400" /> Vaccination Status
-                    </p>
-                    <p className="text-xs font-medium text-stone-600 italic">Consult AI above for schedule estimates.</p>
-                  </div>
-                  <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100">
-                    <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 flex items-center">
-                      <Zap size={10} className="mr-1 text-amber-400" /> Milk & Nutrients
-                    </p>
-                    <p className="text-xs font-medium text-stone-600 italic">Personalized based on child allergies.</p>
-                  </div>
-                </div>
+                      {editingChildId === child.id && (
+                        <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100 space-y-4 mb-4">
+                          <h4 className="font-bold text-sm text-stone-900 border-b pb-2">Edit Child Profile</h4>
+                          <div className="grid grid-cols-2 gap-3">
+                            <input type="text" placeholder="Name" value={editChildData.name || ''} onChange={e => setEditChildData({...editChildData, name: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="number" placeholder="Age" value={editChildData.age || ''} onChange={e => setEditChildData({...editChildData, age: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <select value={editChildData.gender || 'male'} onChange={e => setEditChildData({...editChildData, gender: e.target.value as any})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100">
+                              <option value="male">Male</option>
+                              <option value="female">Female</option>
+                            </select>
+                            <input type="text" placeholder="Known Allergies" value={editChildData.allergies || ''} onChange={e => setEditChildData({...editChildData, allergies: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="number" placeholder="Height (cm)" value={editChildData.height || ''} onChange={e => setEditChildData({...editChildData, height: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="number" placeholder="Weight (kg)" value={editChildData.weight || ''} onChange={e => setEditChildData({...editChildData, weight: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                          </div>
+                          <div className="flex space-x-2 pt-2">
+                             <button onClick={handleSaveEditChild} className="flex-1 bg-blue-600 text-white py-2 rounded-xl text-sm font-bold shadow-sm active:scale-95">Save Changes</button>
+                             <button onClick={() => setEditingChildId(null)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-2 rounded-xl text-sm font-bold active:scale-95">Cancel</button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="rounded-2xl bg-blue-50 p-4 border border-blue-100">
+                         <div className="mb-4 flex items-center space-x-2 text-blue-600">
+                           <Stethoscope size={18} />
+                           <h4 className="font-bold text-sm">Pediatric Symptoms Triage</h4>
+                         </div>
+                         <textarea
+                           value={childSymptoms}
+                           onChange={e => setChildSymptoms(e.target.value)}
+                           placeholder="e.g. Fever for 1 day, rash on arms..."
+                           className="mb-4 h-24 w-full rounded-xl bg-white p-4 text-sm outline-none focus:ring-1 focus:ring-blue-200 border-none resize-none placeholder:text-stone-300"
+                         />
+                         <button onClick={handleChildTriage} disabled={loadingAI || !childSymptoms.trim()} className="w-full rounded-xl bg-blue-600 py-3 font-bold text-white shadow-md active:scale-95 disabled:opacity-50 transition-all text-sm">
+                            {loadingAI ? 'Analyzing...' : 'Analyze Health'}
+                         </button>
+
+                         {childTriageResult && (
+                           <div className="mt-4 rounded-xl bg-white p-4 text-xs text-blue-900 leading-relaxed whitespace-pre-wrap font-medium">
+                             {childTriageResult}
+                           </div>
+                         )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100">
+                          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 flex items-center">
+                            <Heart size={10} className="mr-1 text-red-400" /> Vaccination Status
+                          </p>
+                          
+                          {parsedVaccines.length > 0 ? (
+                            <div className="mt-3 space-y-2">
+                              {parsedVaccines.map((vaccine, idx) => {
+                                const isGiven = (child.givenVaccines || []).includes(vaccine);
+                                return (
+                                  <div key={idx} className="flex items-center space-x-2 text-sm bg-white p-2 rounded-xl border border-stone-100 shadow-sm cursor-pointer" onClick={() => handleToggleVaccine(vaccine)}>
+                                    {isGiven ? <CheckCircle2 size={16} className="text-green-500" /> : <Circle size={16} className="text-stone-300" />}
+                                    <span className={isGiven ? "text-stone-400 line-through" : "text-stone-700 font-medium"}>{vaccine}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-xs font-medium text-stone-500 italic mb-3">No data. Generate AI recommendations below.</p>
+                          )}
+                          <button onClick={handleGetVaccines} disabled={loadingVaccines} className="mt-3 w-full rounded-xl bg-white border border-stone-200 py-2 font-bold text-stone-700 text-xs shadow-sm active:scale-95 disabled:opacity-50">
+                            {loadingVaccines ? 'Generating...' : 'Get AI Recommendations'}
+                          </button>
+                        </div>
+                        <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100">
+                          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 flex items-center">
+                            <Zap size={10} className="mr-1 text-amber-400" /> Milk & Nutrients
+                          </p>
+                          {child.nutritionRecommendation ? (
+                            <div className="text-xs font-medium text-stone-600 leading-relaxed whitespace-pre-wrap mt-2">
+                               {child.nutritionRecommendation}
+                            </div>
+                          ) : (
+                            <p className="text-xs font-medium text-stone-500 italic mb-3">Get personalized milk & nutrient suggestions based on child profile.</p>
+                          )}
+                          <button onClick={handleGetNutrition} disabled={loadingNutrition} className="mt-3 w-full rounded-xl bg-white border border-stone-200 py-2 font-bold text-stone-700 text-xs shadow-sm active:scale-95 disabled:opacity-50">
+                            {loadingNutrition ? 'Generating...' : 'Get AI Recommendation'}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )}
 
