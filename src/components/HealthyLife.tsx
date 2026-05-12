@@ -44,14 +44,14 @@ export default function HealthyLife() {
     );
     const unsubLogs = onSnapshot(qLogs, (snapshot) => {
       setLogs(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as HealthLog)));
-    });
+    }, (error) => handleFirestoreError(error, OperationType.GET, 'healthLogs'));
 
     const qChildren = query(collection(db, 'children'), where('parentId', '==', user.uid));
     const unsubChildren = onSnapshot(qChildren, (snapshot) => {
       const childrenData = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Child));
       setChildren(childrenData);
       if (childrenData.length > 0 && !selectedChildId) setSelectedChildId(childrenData[0].id!);
-    });
+    }, (error) => handleFirestoreError(error, OperationType.GET, 'children'));
 
     const loadBiometrics = async () => {
       try {

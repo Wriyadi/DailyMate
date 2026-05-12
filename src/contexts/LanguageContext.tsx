@@ -88,9 +88,16 @@ const translations = {
     'cook': 'Cook',
     'home_hobby': 'Home',
     'my_pets': 'My Pets',
+    'my_garden': 'My Garden',
+    'culinary_assistant': 'Culinary Assistant',
     'visual_diagnostic': 'Visual Diagnostic Tool',
+    'plant_disease_diagnostic': 'Plant Disease Diagnostics',
+    'ai_culinary_assistant': 'AI Culinary Assistant',
     'cat_scratching': 'My cat keeps scratching its ear... (Upload photo optional)',
+    'plant_yellow': 'Why are my Monstera leaves turning yellow? (Upload photo optional)',
+    'suggest_healthy_dinner': 'Suggest a healthy dinner for 2 with chicken and spinach...',
     'get_advice': 'Get Advice',
+    'analyzing': 'Analyzing...',
   },
   id: {
     'home': 'Beranda',
@@ -171,9 +178,16 @@ const translations = {
     'cook': 'Masak',
     'home_hobby': 'Rumah',
     'my_pets': 'Hewan Peliharaan Saya',
+    'my_garden': 'Taman Saya',
+    'culinary_assistant': 'Asisten Kuliner',
     'visual_diagnostic': 'Alat Diagnostik Visual',
+    'plant_disease_diagnostic': 'Diagnostik Penyakit Tanaman',
+    'ai_culinary_assistant': 'Asisten Kuliner AI',
     'cat_scratching': 'Kucing saya terus menggaruk telinganya... (Unggah foto opsional)',
+    'plant_yellow': 'Mengapa daun Monstera saya menguning? (Unggah foto opsional)',
+    'suggest_healthy_dinner': 'Sarankan makan malam sehat untuk 2 orang dengan ayam dan bayam...',
     'get_advice': 'Dapatkan Saran',
+    'analyzing': 'Sedang menganalisis...',
   }
 };
 

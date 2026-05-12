@@ -3,7 +3,7 @@ import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore
 import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
-import { db } from '../lib/firebase';
+import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { geminiService } from '../services/geminiService';
 import { Pet, Plant, Child } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -34,10 +34,10 @@ export default function SmartHobby() {
     const childrenQ = query(collection(db, 'children'), where('parentId', '==', user.uid));
     const recipesQ = query(collection(db, 'recipes'), where('ownerId', '==', user.uid));
 
-    const unsubPets = onSnapshot(petsQ, (s) => setPets(s.docs.map(d => ({ id: d.id, ...d.data() } as Pet))));
-    const unsubPlants = onSnapshot(plantsQ, (s) => setPlants(s.docs.map(d => ({ id: d.id, ...d.data() } as Plant))));
-    const unsubChildren = onSnapshot(childrenQ, (s) => setChildren(s.docs.map(d => ({ id: d.id, ...d.data() } as Child))));
-    const unsubRecipes = onSnapshot(recipesQ, (s) => setSavedRecipes(s.docs.map(d => ({ id: d.id, title: d.data().title, desc: d.data().desc }))));
+    const unsubPets = onSnapshot(petsQ, (s) => setPets(s.docs.map(d => ({ id: d.id, ...d.data() } as Pet))), (error) => handleFirestoreError(error, OperationType.GET, 'pets'));
+    const unsubPlants = onSnapshot(plantsQ, (s) => setPlants(s.docs.map(d => ({ id: d.id, ...d.data() } as Plant))), (error) => handleFirestoreError(error, OperationType.GET, 'plants'));
+    const unsubChildren = onSnapshot(childrenQ, (s) => setChildren(s.docs.map(d => ({ id: d.id, ...d.data() } as Child))), (error) => handleFirestoreError(error, OperationType.GET, 'children'));
+    const unsubRecipes = onSnapshot(recipesQ, (s) => setSavedRecipes(s.docs.map(d => ({ id: d.id, title: d.data().title, desc: d.data().desc }))), (error) => handleFirestoreError(error, OperationType.GET, 'recipes'));
 
     return () => { unsubPets(); unsubPlants(); unsubChildren(); unsubRecipes(); };
   }, [user]);
@@ -181,7 +181,7 @@ export default function SmartHobby() {
             <section className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-bold text-stone-900 border-b pb-1">
-                  {activeTab === 'pets' ? t('my_pets') : activeTab === 'gardening' ? 'My Garden' : 'Culinary Assistant'}
+                  {activeTab === 'pets' ? t('my_pets') : activeTab === 'gardening' ? t('my_garden') : t('culinary_assistant')}
                 </h3>
                 <button onClick={() => setShowHobbyModal(true)} className="h-8 w-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center active:scale-90 transition-all hover:bg-stone-200">
                   <Plus size={16} />
@@ -283,7 +283,7 @@ export default function SmartHobby() {
               <div className="relative z-10">
                 <h3 className="mb-4 flex items-center text-lg font-bold">
                   <MessageCircle size={20} className="mr-2 text-emerald-400" />
-                  {activeTab === 'pets' ? t('visual_diagnostic') : activeTab === 'gardening' ? 'Plant Disease Diagnostics' : 'AI Culinary Assistant'}
+                  {activeTab === 'pets' ? t('visual_diagnostic') : activeTab === 'gardening' ? t('plant_disease_diagnostic') : t('ai_culinary_assistant')}
                 </h3>
                 <div className="relative mb-4">
                   <textarea
@@ -291,8 +291,8 @@ export default function SmartHobby() {
                     onChange={e => setQueryInput(e.target.value)}
                     placeholder={
                       activeTab === 'pets' ? t('cat_scratching') :
-                      activeTab === 'gardening' ? "Why are my Monstera leaves turning yellow? (Upload photo optional)" :
-                      "Suggest a healthy dinner for 2 with chicken and spinach..."
+                      activeTab === 'gardening' ? t('plant_yellow') :
+                      t('suggest_healthy_dinner')
                     }
                     className="h-28 w-full rounded-2xl bg-white/10 p-4 pb-10 text-sm outline-none focus:bg-white/20 transition-all border-none resize-none placeholder:text-white/40"
                   />
@@ -311,7 +311,7 @@ export default function SmartHobby() {
                   disabled={loadingAI || (!queryInput.trim() && !hobbyImage)}
                   className="w-full rounded-2xl bg-white py-4 font-bold text-neutral-900 shadow-lg disabled:opacity-50 active:scale-95 transition-all"
                 >
-                  {loadingAI ? 'Analyzing...' : t('get_advice')}
+                  {loadingAI ? t('analyzing') : t('get_advice')}
                 </button>
               </div>
               {/* Subtle background decoration */}

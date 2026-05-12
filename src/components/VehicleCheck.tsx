@@ -30,7 +30,7 @@ export default function VehicleCheck() {
     const q = query(collection(db, 'vehicles'), where('ownerId', '==', user.uid));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setVehicles(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Vehicle)));
-    });
+    }, (error) => handleFirestoreError(error, OperationType.GET, 'vehicles'));
     return () => unsubscribe();
   }, [user]);
 
@@ -214,7 +214,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
     const q = query(collection(db, path), orderBy('date', 'desc'));
     const unsub = onSnapshot(q, s => {
       setLogs(s.docs.map(d => ({ id: d.id, ...d.data() } as ServiceLog)));
-    });
+    }, (error) => handleFirestoreError(error, OperationType.GET, path));
     return () => unsub();
   }, [vehicle.id, user]);
 
