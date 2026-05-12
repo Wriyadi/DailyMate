@@ -9,7 +9,7 @@ dotenv.config({ path: '.env.example' }); // Fallback to .env.example if used by 
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+  const PORT = 3000;
 
   app.use(express.json({ limit: '50mb' }));
 
