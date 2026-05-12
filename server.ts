@@ -12,9 +12,9 @@ async function startServer() {
   // API Route for Gemini
   app.post('/api/gemini', async (req, res) => {
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        return res.status(500).json({ error: 'API key is missing' });
+      const apiKey = process.env.GEMINI_API_KEY?.trim();
+      if (!apiKey || apiKey === 'your_api_key_here' || apiKey === 'YOUR_API_KEY') {
+        return res.status(500).json({ error: 'API key is missing or invalid. Please check your Applet Settings.' });
       }
       const ai = new GoogleGenAI({ apiKey });
       const { model, config, contents } = req.body;
@@ -22,6 +22,10 @@ async function startServer() {
       res.json({ text: response.text });
     } catch (e: any) {
       console.error(e);
+      // Improve the error message for invalid API key
+      if (e.message && e.message.includes('API key not valid')) {
+        return res.status(401).json({ error: 'API key is invalid. Please check your Applet Settings.' });
+      }
       res.status(500).json({ error: e.message || 'Internal error' });
     }
   });

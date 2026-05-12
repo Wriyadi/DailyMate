@@ -78,6 +78,8 @@ export interface UserProfile {
   weight?: number;
   age?: number;
   gender?: 'male' | 'female' | 'other';
+  whatsapp?: string;
+  photoURL?: string;
   birthDate?: string;
   allergies?: string;
   lastOvulationDate?: string;

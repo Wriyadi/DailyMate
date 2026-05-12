@@ -1,4 +1,10 @@
 export const geminiService = {
+  getSystemInstruction(baseInstruction: string): string {
+    const lang = typeof window !== 'undefined' ? localStorage.getItem('language') : 'en';
+    const langSuffix = lang === 'id' ? ' You MUST respond in Bahasa Indonesia.' : ' You MUST respond in English.';
+    return baseInstruction + langSuffix;
+  },
+
   async requestGemini(body: any): Promise<string | null> {
     const res = await fetch('/api/gemini', {
       method: 'POST',
@@ -29,8 +35,9 @@ export const geminiService = {
       if (!text) return null;
       const mileage = parseInt(text.replace(/[^0-9]/g, ""), 10);
       return isNaN(mileage) ? null : mileage;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error extracting odometer:", error);
+      if (error?.message?.includes('API key')) alert(error.message);
       return null;
     }
   },
@@ -41,13 +48,14 @@ export const geminiService = {
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are an advanced AI Medical Triage Assistant. Perform complex triage on user symptoms, factoring in their age, gender, and allergies. Provide in-depth preliminary health insights, potential causes, and next steps. Always include a strong disclaimer that you are an AI and the user must consult a licensed physician.",
+          systemInstruction: this.getSystemInstruction("You are an advanced AI Medical Triage Assistant. Perform complex triage on user symptoms, factoring in their age, gender, and allergies. Provide in-depth preliminary health insights, potential causes, and next steps. Always include a strong disclaimer that you are an AI and the user must consult a licensed physician."),
         },
         contents: `The user reports these symptoms: ${symptoms}.${context}`,
       });
       return text || "Unable to process symptoms at this time.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error checking symptoms:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "An error occurred while analyzing symptoms.";
     }
   },
@@ -57,7 +65,7 @@ export const geminiService = {
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are a pediatric AI. Given a child's age, return a strict JSON array of strings containing the recommended vaccines they should have taken or should take now. For example: [\"BCG\", \"Hepatitis B (Dose 1)\", \"Polio (Dose 1)\"]. Do not include markdown formatting or extra text, just the raw JSON array. If unsure, provide standard WHO recommendations for that age.",
+          systemInstruction: this.getSystemInstruction("You are a pediatric AI. Given a child's age, return a strict JSON array of strings containing the recommended vaccines they should have taken or should take now. For example: [\"BCG\", \"Hepatitis B (Dose 1)\", \"Polio (Dose 1)\"]. Do not include markdown formatting or extra text, just the raw JSON array. If unsure, provide standard WHO recommendations for that age."),
         },
         contents: `Child Name: ${childData.name}, Age: ${childData.age}, Gender: ${childData.gender}. Provide recommended vaccines as a JSON array of strings.`,
       });
@@ -70,8 +78,9 @@ export const geminiService = {
         console.error("Failed to parse vaccines JSON", parsedText);
         return [];
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing vaccines:", error);
+      if (error?.message?.includes('API key')) alert(error.message);
       return [];
     }
   },
@@ -83,13 +92,14 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are a senior pediatric nutritionist AI. Recommend suitable milk and specific nutrients/vitamins based on age, gender and allergies.",
+          systemInstruction: this.getSystemInstruction("You are a senior pediatric nutritionist AI. Recommend suitable milk and specific nutrients/vitamins based on age, gender and allergies."),
         },
         contents: prompt,
       });
       return text || "No insights found.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing child nutrition:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "Error analyzing nutritional needs.";
     }
   },
@@ -102,13 +112,14 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are a senior pediatric health AI capable of complex triage. Provide actionable, medically sound advice for child development and health triage. Include vaccination markers and nutritional recommendations.",
+          systemInstruction: this.getSystemInstruction("You are a senior pediatric health AI capable of complex triage. Provide actionable, medically sound advice for child development and health triage. Include vaccination markers and nutritional recommendations."),
         },
         contents: prompt,
       });
       return text || "No insights found.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing child health:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "Error analyzing pediatric data.";
     }
   },
@@ -123,13 +134,14 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: `You are an advanced diagnostic AI specializing in ${type === 'pet' ? 'veterinary medicine' : 'botany and plant pathology'}. Utilize your advanced vision capabilities to perform a unified visual diagnostic if an image is provided. Detail potential diagnoses, causes, and step-by-step solutions. Keep it highly actionable.`,
+          systemInstruction: this.getSystemInstruction(`You are an advanced diagnostic AI specializing in ${type === 'pet' ? 'veterinary medicine' : 'botany and plant pathology'}. Utilize your advanced vision capabilities to perform a unified visual diagnostic if an image is provided. Detail potential diagnoses, causes, and step-by-step solutions. Keep it highly actionable.`),
         },
         contents: [{ parts }],
       });
       return text || "No solutions found.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error troubleshooting hobby:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "An error occurred while finding solutions.";
     }
   },
@@ -140,13 +152,14 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are a master gourmet chef. Recommend a personalized, healthy recipe based on user preferences and cuisine favorites. Detail precise ingredients and step-by-step instructions.",
+          systemInstruction: this.getSystemInstruction("You are a master gourmet chef. Recommend a personalized, healthy recipe based on user preferences and cuisine favorites. Detail precise ingredients and step-by-step instructions."),
         },
         contents: `User preferences: ${preferences}.${cuisineStr}`,
       });
       return text || "No recipe found.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error recommending recipe:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "An error occurred while generating a recipe.";
     }
   },
@@ -157,13 +170,14 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are an advanced household operations AI. Synthesize logical, predictive restocking needs for complex households with children, pets, and plants. Output a smart, bulleted checklist.",
+          systemInstruction: this.getSystemInstruction("You are an advanced household operations AI. Synthesize logical, predictive restocking needs for complex households with children, pets, and plants. Output a smart, bulleted checklist."),
         },
         contents: prompt,
       });
       return text || "No recommendations.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating restock info:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "Error generating recommendations.";
     }
   },
@@ -173,7 +187,7 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are an advanced AI nutritionist. Leverage advanced vision capabilities to precisely estimate calories and macronutrients (like carbs) from the provided meal image. Recommend specific fruits/vegetables to achieve dietary balance according to gender and BMI parameters.",
+          systemInstruction: this.getSystemInstruction("You are an advanced AI nutritionist. Leverage advanced vision capabilities to precisely estimate calories and macronutrients (like carbs) from the provided meal image. Recommend specific fruits/vegetables to achieve dietary balance according to gender and BMI parameters."),
         },
         contents: [
           {
@@ -185,8 +199,9 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
         ],
       });
       return text || "Unable to analyze meal.";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing meal:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "An error occurred while analyzing the meal.";
     }
   },
@@ -196,13 +211,14 @@ Provide specific recommendations for milk and essential nutrients/vitamins for t
       const text = await this.requestGemini({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are a proactive Virtual Medical & Fitness Assistant. Perform a complex analysis comparing daily calories consumed vs burned, factoring in BMI. Deliver a concise, medically-sound, encouraging summary and actionable fitness advice.",
+          systemInstruction: this.getSystemInstruction("You are a proactive Virtual Medical & Fitness Assistant. Perform a complex analysis comparing daily calories consumed vs burned, factoring in BMI. Deliver a concise, medically-sound, encouraging summary and actionable fitness advice."),
         },
         contents: `Calories consumed today: ${caloriesConsumed}. Calories burned today: ${caloriesBurned}. User BMI is ${bmi || 'unknown'}. Provide analysis and actionable advice.`,
       });
       return text || "Keep up the good work!";
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating health insights:", error);
+      if (error?.message?.includes('API key')) return error.message;
       return "Unable to generate insights at this time.";
     }
   }
