@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, orderBy } from 'firebase/firestore';
 import { Camera, Plus, Trash2, Gauge, AlertCircle, Fuel, Settings2, Car, Wrench, History } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../contexts/LanguageContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { geminiService } from '../services/geminiService';
 import { Vehicle, ServiceLog } from '../types';
@@ -9,6 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function VehicleCheck() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -71,7 +73,7 @@ export default function VehicleCheck() {
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Vehicle Check</h2>
+        <h2 className="text-2xl font-bold">{t('vehicle_check')}</h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg active:scale-95"
@@ -196,6 +198,7 @@ function formatRupiah(amount: number) {
 }
 
 const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [logs, setLogs] = useState<ServiceLog[]>([]);
   const [showLogForm, setShowLogForm] = useState(false);
@@ -265,7 +268,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
           <h3 className="text-xl font-bold">{vehicle.name} <span className="text-sm font-normal text-stone-400">({vehicle.brand})</span></h3>
           <p className="flex items-center text-xs text-stone-400 font-medium uppercase tracking-wider">
             <Fuel size={12} className="mr-1" />
-            {vehicle.fuelType} • {vehicle.transmission}
+            {t(vehicle.fuelType)} • {t(vehicle.transmission)}
           </p>
         </div>
         <div className={cn(
@@ -278,14 +281,14 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
 
       <div className="mb-4 grid grid-cols-2 gap-4">
         <div className="rounded-2xl bg-stone-50 p-3">
-          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Mileage</p>
+          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('mileage')}</p>
           <p className="text-lg font-bold flex items-center">
             {vehicle.odometer.toLocaleString()}
             <span className="ml-1 text-[10px] text-stone-400">km</span>
           </p>
         </div>
         <div className="rounded-2xl bg-stone-50 p-3">
-          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Interval</p>
+          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('interval')}</p>
           <p className="text-lg font-bold flex items-center">
             {vehicle.maintenanceInterval.toLocaleString()}
             <span className="ml-1 text-[10px] text-stone-400">km</span>
@@ -299,7 +302,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
           <span className={cn(
             remaining < 500 ? "text-red-500" : "text-emerald-500"
           )}>
-            {remaining > 0 ? `${remaining.toLocaleString()}km left` : 'Service Required!'}
+            {remaining > 0 ? `${remaining.toLocaleString()} ${t('km_left')}` : t('service_required')}
           </span>
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-stone-100">
@@ -317,17 +320,17 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
       {remaining < 500 && (
         <div className="mb-6 flex items-center space-x-2 rounded-xl bg-red-50 p-3 text-red-600">
           <AlertCircle size={16} />
-          <p className="text-xs font-bold leading-tight uppercase tracking-wide">Schedule maintenance soon</p>
+          <p className="text-xs font-bold leading-tight uppercase tracking-wide">{t('schedule_main_soon')}</p>
         </div>
       )}
 
       <div className="mt-4 pt-4 border-t border-stone-100">
         <div className="flex justify-between items-center mb-4">
            <h4 className="flex items-center text-sm font-bold text-stone-700">
-             <History size={16} className="mr-2" /> Service History
+             <History size={16} className="mr-2" /> {t('service_history')}
            </h4>
            <button onClick={() => setShowLogForm(!showLogForm)} className="flex items-center text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
-             <Plus size={14} className="mr-1"/> Add Log
+             <Plus size={14} className="mr-1"/> {t('add_log')}
            </button>
         </div>
 
@@ -357,7 +360,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
              </div>
           ))}
           {logs.length === 0 && !showLogForm && (
-            <p className="text-xs text-stone-400 italic">No service history found.</p>
+            <p className="text-xs text-stone-400 italic">{t('no_service_history')}</p>
           )}
         </div>
       </div>

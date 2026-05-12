@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, orderBy, limit, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Heart, Activity, Stethoscope, Ruler, Weight, User, MessageSquare, AlertTriangle, Camera, Plus, Zap, Baby, Calendar, Edit2, CheckCircle2, Circle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../contexts/LanguageContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { geminiService } from '../services/geminiService';
 import { HealthLog, Child } from '../types';
@@ -9,6 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function HealthyLife() {
+  const { t } = useLanguage();
   const { user, profile, updateProfile } = useAuth();
   const [logs, setLogs] = useState<HealthLog[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
@@ -195,10 +197,10 @@ export default function HealthyLife() {
   };
 
   const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { label: 'Underweight', color: 'text-amber-500' };
-    if (bmi < 25) return { label: 'Normal weight', color: 'text-emerald-500' };
-    if (bmi < 30) return { label: 'Overweight', color: 'text-orange-500' };
-    return { label: 'Obesity', color: 'text-red-500' };
+    if (bmi < 18.5) return { label: t('underweight'), color: 'text-amber-500' };
+    if (bmi < 25) return { label: t('normal_weight'), color: 'text-emerald-500' };
+    if (bmi < 30) return { label: t('overweight'), color: 'text-orange-500' };
+    return { label: t('obesity'), color: 'text-red-500' };
   };
 
   const handleSymptomCheck = async () => {
@@ -297,8 +299,8 @@ export default function HealthyLife() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold">Healthy Life</h2>
-        <p className="text-stone-500">Wellness tracking & insights.</p>
+        <h2 className="text-2xl font-bold">{t('healthy_life')}</h2>
+        <p className="text-stone-500">{t('wellness_tracking')}</p>
       </div>
 
       <div className="mb-6 flex rounded-2xl bg-stone-100 p-1">
@@ -309,7 +311,7 @@ export default function HealthyLife() {
             activeTab === 'tracker' ? "bg-white text-emerald-600 shadow-sm" : "text-stone-500"
           )}
         >
-          Trackers
+          {t('trackers')}
         </button>
         <button
           onClick={() => setActiveTab('child')}
@@ -318,7 +320,7 @@ export default function HealthyLife() {
             activeTab === 'child' ? "bg-white text-blue-600 shadow-sm" : "text-stone-500"
           )}
         >
-          Child Care
+          {t('child_care')}
         </button>
         <button
           onClick={() => setActiveTab('nutrition')}
@@ -327,7 +329,7 @@ export default function HealthyLife() {
             activeTab === 'nutrition' ? "bg-white text-emerald-600 shadow-sm" : "text-stone-500"
           )}
         >
-          Nutrition
+          {t('nutrition')}
         </button>
         <button
           onClick={() => setActiveTab('assistant')}
@@ -336,7 +338,7 @@ export default function HealthyLife() {
             activeTab === 'assistant' ? "bg-white text-emerald-600 shadow-sm" : "text-stone-500"
           )}
         >
-          Assistant
+          {t('assistant')}
         </button>
       </div>
 
@@ -345,12 +347,12 @@ export default function HealthyLife() {
           <section className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
             <h3 className="mb-4 flex items-center font-bold text-stone-900 border-b pb-2">
               <User size={18} className="mr-2 text-emerald-500" />
-              Biometrics
+              {t('biometrics')}
             </h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center">
-                  <User size={10} className="mr-1" /> Age
+                  <User size={10} className="mr-1" /> {t('age')}
                 </label>
                 <input
                   type="number"
@@ -361,16 +363,16 @@ export default function HealthyLife() {
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center">
-                   Gender
+                   {t('gender')}
                 </label>
                 <select
                   value={profile?.gender || 'other'}
                   onChange={e => updateProfile({ gender: e.target.value as any })}
                   className="w-full bg-stone-50 rounded-xl px-3 py-2 font-bold border-none"
                 >
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="male">{t('male')}</option>
+                  <option value="female">{t('female')}</option>
+                  <option value="other">{t('other')}</option>
                 </select>
               </div>
             </div>
@@ -378,7 +380,7 @@ export default function HealthyLife() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center">
-                  <AlertTriangle size={10} className="mr-1" /> Known Allergies
+                  <AlertTriangle size={10} className="mr-1" /> {t('known_allergies')}
                 </label>
                 <input
                   type="text"
@@ -390,7 +392,7 @@ export default function HealthyLife() {
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center">
-                  <Heart size={10} className="mr-1" /> Chronic Diseases
+                  <Heart size={10} className="mr-1" /> {t('chronic_diseases')}
                 </label>
                 <div className="flex flex-col space-y-2 max-h-32 overflow-y-auto">
                   {['Hypertension', 'Diabetes', 'Heart Disease', 'Asthma', 'Kidney Disease'].map(disease => (
@@ -414,7 +416,7 @@ export default function HealthyLife() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center">
-                  <Ruler size={10} className="mr-1" /> Height (cm)
+                  <Ruler size={10} className="mr-1" /> {t('height_cm')}
                 </label>
                 <input
                   type="number"
@@ -425,7 +427,7 @@ export default function HealthyLife() {
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center">
-                  <Weight size={10} className="mr-1" /> Weight (kg)
+                  <Weight size={10} className="mr-1" /> {t('weight_kg')}
                 </label>
                 <input
                   type="number"
@@ -441,14 +443,14 @@ export default function HealthyLife() {
               disabled={savingBio}
               className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-sm hover:bg-emerald-700 active:scale-95 transition-all mb-6"
             >
-              {savingBio ? 'Saving...' : 'Save/Update Biometrics'}
+              {savingBio ? t('loading') : t('save_bio')}
             </button>
 
             {bmi > 0 && (
               <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100/50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Body Mass Index</p>
+                    <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('bmi')}</p>
                     <p className="text-3xl font-black text-emerald-900">{bmi}</p>
                     <p className={cn("text-xs font-bold mt-1", bmiInfo.color)}>{bmiInfo.label}</p>
                   </div>
@@ -486,7 +488,7 @@ export default function HealthyLife() {
           )}
 
           <section>
-            <h3 className="mb-4 text-xs font-bold text-stone-400 uppercase tracking-widest">Recent Logs</h3>
+            <h3 className="mb-4 text-xs font-bold text-stone-400 uppercase tracking-widest">{t('recent_logs')}</h3>
             <div className="space-y-3">
               {logs.map(log => (
                 <div key={log.id} className="rounded-2xl bg-white p-4 shadow-sm flex items-start space-x-3 border border-stone-50">
@@ -499,7 +501,7 @@ export default function HealthyLife() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-stone-800 capitalize leading-tight">{log.type}</p>
-                    <p className="truncate text-xs text-stone-400 font-medium">{log.note || 'No notes'}</p>
+                    <p className="truncate text-xs text-stone-400 font-medium">{log.note === 'Meal Analyzed' ? 'Meal Analyzed' : log.note || 'No notes'}</p>
                     <p className="text-[10px] text-stone-300 mt-1">{new Date(log.date).toLocaleDateString()}</p>
                   </div>
                 </div>

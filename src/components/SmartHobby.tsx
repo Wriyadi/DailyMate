@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
 import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../contexts/LanguageContext';
 import { db } from '../lib/firebase';
 import { geminiService } from '../services/geminiService';
 import { Pet, Plant, Child } from '../types';
@@ -11,6 +12,7 @@ import { cn } from '../lib/utils';
 type HobbyTab = 'pets' | 'gardening' | 'cooking' | 'household';
 
 export default function SmartHobby() {
+  const { t } = useLanguage();
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<HobbyTab>('pets');
   const [pets, setPets] = useState<Pet[]>([]);
@@ -122,18 +124,18 @@ export default function SmartHobby() {
   return (
     <div className="p-6">
       <div className="mb-6 focus:outline-none">
-        <h2 className="text-2xl font-bold">Smart Hobby</h2>
+        <h2 className="text-2xl font-bold">{t('smart_hobby')}</h2>
         <div className="flex items-center space-x-2">
-           <p className="text-stone-500">Care for what you love.</p>
+           <p className="text-stone-500">{t('care_for_what_you_love')}</p>
            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400"></div>
         </div>
       </div>
 
       <div className="mb-8 flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
-        <HobbyTabBtn icon={<PawPrint size={16} />} active={activeTab === 'pets'} label="Pets" onClick={() => setActiveTab('pets')} color="amber" />
-        <HobbyTabBtn icon={<Leaf size={16} />} active={activeTab === 'gardening'} label="Garden" onClick={() => setActiveTab('gardening')} color="emerald" />
-        <HobbyTabBtn icon={<Utensils size={16} />} active={activeTab === 'cooking'} label="Cook" onClick={() => setActiveTab('cooking')} color="rose" />
-        <HobbyTabBtn icon={<Home size={16} />} active={activeTab === 'household'} label="Home" onClick={() => setActiveTab('household')} color="blue" />
+        <HobbyTabBtn icon={<PawPrint size={16} />} active={activeTab === 'pets'} label={t('pets')} onClick={() => setActiveTab('pets')} color="amber" />
+        <HobbyTabBtn icon={<Leaf size={16} />} active={activeTab === 'gardening'} label={t('garden')} onClick={() => setActiveTab('gardening')} color="emerald" />
+        <HobbyTabBtn icon={<Utensils size={16} />} active={activeTab === 'cooking'} label={t('cook')} onClick={() => setActiveTab('cooking')} color="rose" />
+        <HobbyTabBtn icon={<Home size={16} />} active={activeTab === 'household'} label={t('home_hobby')} onClick={() => setActiveTab('household')} color="blue" />
       </div>
 
       <div className="space-y-6 pb-20">
@@ -179,7 +181,7 @@ export default function SmartHobby() {
             <section className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-bold text-stone-900 border-b pb-1">
-                  {activeTab === 'pets' ? 'My Pets' : activeTab === 'gardening' ? 'My Garden' : 'Culinary Assistant'}
+                  {activeTab === 'pets' ? t('my_pets') : activeTab === 'gardening' ? 'My Garden' : 'Culinary Assistant'}
                 </h3>
                 <button onClick={() => setShowHobbyModal(true)} className="h-8 w-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center active:scale-90 transition-all hover:bg-stone-200">
                   <Plus size={16} />
@@ -281,14 +283,14 @@ export default function SmartHobby() {
               <div className="relative z-10">
                 <h3 className="mb-4 flex items-center text-lg font-bold">
                   <MessageCircle size={20} className="mr-2 text-emerald-400" />
-                  {activeTab === 'pets' ? 'Visual Diagnostic Tool' : activeTab === 'gardening' ? 'Plant Disease Diagnostics' : 'AI Culinary Assistant'}
+                  {activeTab === 'pets' ? t('visual_diagnostic') : activeTab === 'gardening' ? 'Plant Disease Diagnostics' : 'AI Culinary Assistant'}
                 </h3>
                 <div className="relative mb-4">
                   <textarea
                     value={queryInput}
                     onChange={e => setQueryInput(e.target.value)}
                     placeholder={
-                      activeTab === 'pets' ? "My cat keeps scratching its ear... (Upload photo optional)" :
+                      activeTab === 'pets' ? t('cat_scratching') :
                       activeTab === 'gardening' ? "Why are my Monstera leaves turning yellow? (Upload photo optional)" :
                       "Suggest a healthy dinner for 2 with chicken and spinach..."
                     }
@@ -309,7 +311,7 @@ export default function SmartHobby() {
                   disabled={loadingAI || (!queryInput.trim() && !hobbyImage)}
                   className="w-full rounded-2xl bg-white py-4 font-bold text-neutral-900 shadow-lg disabled:opacity-50 active:scale-95 transition-all"
                 >
-                  {loadingAI ? 'Analyzing...' : 'Get Advice'}
+                  {loadingAI ? 'Analyzing...' : t('get_advice')}
                 </button>
               </div>
               {/* Subtle background decoration */}
