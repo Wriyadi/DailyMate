@@ -2,6 +2,10 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config(); // Load .env
+dotenv.config({ path: '.env.example' }); // Fallback to .env.example if used by user
 
 async function startServer() {
   const app = express();
