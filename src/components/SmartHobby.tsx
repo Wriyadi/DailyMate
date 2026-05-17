@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
-import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart } from 'lucide-react';
+import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -24,6 +24,7 @@ export default function SmartHobby() {
   const [restockResult, setRestockResult] = useState('');
   const [loadingAI, setLoadingAI] = useState(false);
   const [savedRecipes, setSavedRecipes] = useState<{id?: string, title: string, desc: string}[]>([]);
+  const [selectedRecipe, setSelectedRecipe] = useState<{id?: string, title: string, desc: string} | null>(null);
   const [showHobbyModal, setShowHobbyModal] = useState(false);
   const [hobbyForm, setHobbyForm] = useState<any>({});
 
@@ -212,7 +213,7 @@ export default function SmartHobby() {
                     <p className="text-sm font-bold text-stone-900 border-b pb-1 flex items-center"><BookOpen size={16} className="mr-2"/> My Cookbook</p>
                     <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-none">
                       {savedRecipes.map((recipe, idx) => (
-                        <div key={idx} className="min-w-[140px] rounded-2xl bg-rose-50 p-3 shadow-sm border border-rose-100">
+                        <div key={idx} onClick={() => setSelectedRecipe(recipe)} className="min-w-[140px] rounded-2xl bg-rose-50 p-3 shadow-sm border border-rose-100 cursor-pointer hover:bg-rose-100 transition-colors">
                           <p className="font-bold text-sm text-stone-900 truncate">{recipe.title}</p>
                           <p className="text-xs text-stone-500 truncate">{recipe.desc}</p>
                         </div>
@@ -341,6 +342,39 @@ export default function SmartHobby() {
           </>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedRecipe && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm"
+              onClick={() => setSelectedRecipe(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl flex flex-col max-h-[80vh]"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-stone-100">
+                <h3 className="text-xl font-bold text-stone-900">{selectedRecipe.title}</h3>
+                <button
+                  onClick={() => setSelectedRecipe(null)}
+                  className="rounded-full p-2 text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto whitespace-pre-wrap text-stone-600 text-sm">
+                {selectedRecipe.desc}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
