@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function HealthyLife() {
-  const { t } = useLanguage();
+  const { t, formatNumber } = useLanguage();
   const { user, profile, updateProfile } = useAuth();
   const [logs, setLogs] = useState<HealthLog[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
@@ -451,7 +451,7 @@ export default function HealthyLife() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">{t('bmi')}</p>
-                    <p className="text-3xl font-black text-emerald-900">{bmi}</p>
+                    <p className="text-3xl font-black text-emerald-900">{formatNumber(bmi, 1)}</p>
                     <p className={cn("text-xs font-bold mt-1", bmiInfo.color)}>{bmiInfo.label}</p>
                   </div>
                   <div className="h-12 w-12 rounded-full border-4 border-emerald-200 border-t-emerald-500"></div>

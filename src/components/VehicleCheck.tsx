@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc, orderBy } from 'firebase/firestore';
-import { Camera, Plus, Trash2, Gauge, AlertCircle, Fuel, Settings2, Car, Wrench, History } from 'lucide-react';
+import { Camera, Plus, Trash2, Gauge, AlertCircle, Fuel, Settings2, Car, Wrench, History, Edit2, X, Check } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function VehicleCheck() {
-  const { t } = useLanguage();
+  const { t, formatNumber, language } = useLanguage();
   const { user } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -198,11 +198,15 @@ function formatRupiah(amount: number) {
 }
 
 const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
-  const { t } = useLanguage();
+  const { t, formatNumber, language } = useLanguage();
   const { user } = useAuth();
   const [logs, setLogs] = useState<ServiceLog[]>([]);
   const [showLogForm, setShowLogForm] = useState(false);
   const [newLog, setNewLog] = useState({ description: '', cost: '', newOdometer: vehicle.odometer.toString() });
+  
+  const [showUpdateOdo, setShowUpdateOdo] = useState(false);
+  const [newOdoValue, setNewOdoValue] = useState(vehicle.odometer.toString());
+  const [loadingOCR, setLoadingOCR] = useState(false);
 
   const nextService = vehicle.lastServiceMileage + vehicle.maintenanceInterval;
   const remaining = nextService - vehicle.odometer;
@@ -217,6 +221,40 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
     }, (error) => handleFirestoreError(error, OperationType.GET, path));
     return () => unsub();
   }, [vehicle.id, user]);
+
+  const handleUpdateOdometer = async () => {
+    if (!user || !vehicle.id) return;
+    const odo = parseInt(newOdoValue);
+    if (isNaN(odo) || odo < 0) return;
+    
+    try {
+      const vRef = doc(db, 'vehicles', vehicle.id);
+      await updateDoc(vRef, {
+        odometer: odo
+      });
+      setShowUpdateOdo(false);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to update odometer');
+    }
+  };
+
+  const handleOdoOCR = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoadingOCR(true);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      const mileage = await geminiService.extractOdometer(base64);
+      if (mileage !== null) {
+        setNewOdoValue(mileage.toString());
+      }
+      setLoadingOCR(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleAddLog = async () => {
     if (!newLog.description || !newLog.cost || !user) return;
@@ -280,17 +318,54 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-4">
-        <div className="rounded-2xl bg-stone-50 p-3">
-          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('mileage')}</p>
-          <p className="text-lg font-bold flex items-center">
-            {vehicle.odometer.toLocaleString()}
-            <span className="ml-1 text-[10px] text-stone-400">km</span>
-          </p>
+        <div className="rounded-2xl bg-stone-50 p-3 relative">
+          <div className="flex justify-between items-center mb-1">
+            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('mileage')}</p>
+            {!showUpdateOdo && (
+              <button 
+                onClick={() => { setShowUpdateOdo(true); setNewOdoValue(vehicle.odometer.toString()); }}
+                className="text-stone-400 hover:text-blue-500 transition-colors"
+                title="Update Odometer"
+              >
+                <Edit2 size={12} />
+              </button>
+            )}
+          </div>
+          
+          {showUpdateOdo ? (
+             <div className="flex flex-col space-y-2 mt-1">
+               <div className="flex items-center space-x-2">
+                 <input 
+                   type="number" 
+                   value={newOdoValue} 
+                   onChange={e => setNewOdoValue(e.target.value)} 
+                   className="w-full text-sm font-bold bg-white px-2 py-1 rounded-md outline-none border border-stone-200 focus:border-blue-400"
+                 />
+                 <label className="cursor-pointer text-stone-400 hover:text-blue-500 p-1 bg-stone-100 rounded-md transition-colors relative">
+                   {loadingOCR ? <span className="animate-spin text-xs">...</span> : <Camera size={14} />}
+                   <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleOdoOCR} disabled={loadingOCR} />
+                 </label>
+               </div>
+               <div className="flex space-x-2 justify-end">
+                 <button onClick={() => setShowUpdateOdo(false)} className="p-1 rounded-md bg-stone-200 text-stone-600 hover:bg-stone-300">
+                   <X size={14} />
+                 </button>
+                 <button onClick={handleUpdateOdometer} className="p-1 rounded-md bg-blue-500 text-white hover:bg-blue-600">
+                   <Check size={14} />
+                 </button>
+               </div>
+             </div>
+          ) : (
+            <p className="text-lg font-bold flex items-center">
+              {formatNumber(vehicle.odometer)}
+              <span className="ml-1 text-[10px] text-stone-400">km</span>
+            </p>
+          )}
         </div>
         <div className="rounded-2xl bg-stone-50 p-3">
           <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('interval')}</p>
           <p className="text-lg font-bold flex items-center">
-            {vehicle.maintenanceInterval.toLocaleString()}
+            {formatNumber(vehicle.maintenanceInterval)}
             <span className="ml-1 text-[10px] text-stone-400">km</span>
           </p>
         </div>
@@ -302,7 +377,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
           <span className={cn(
             remaining < 500 ? "text-red-500" : "text-emerald-500"
           )}>
-            {remaining > 0 ? `${remaining.toLocaleString()} ${t('km_left')}` : t('service_required')}
+            {remaining > 0 ? `${formatNumber(remaining)} ${t('km_left')}` : t('service_required')}
           </span>
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-stone-100">
@@ -352,7 +427,7 @@ const VehicleCard: React.FC<{ vehicle: Vehicle }> = ({ vehicle }) => {
              <div key={log.id} className="flex justify-between items-start rounded-2xl bg-stone-50 p-3">
                <div>
                  <p className="text-sm font-bold text-stone-800">{log.description}</p>
-                 <p className="text-[10px] text-stone-500 font-medium">{new Date(log.date).toLocaleDateString()} • {log.mileage.toLocaleString()}km</p>
+                 <p className="text-[10px] text-stone-500 font-medium">{new Date(log.date).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US')} • {formatNumber(log.mileage)}km</p>
                </div>
                <p className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
                  {formatRupiah(log.costRupiah)}

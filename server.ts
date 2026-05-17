@@ -9,9 +9,16 @@ dotenv.config({ path: '.env.example' }); // Fallback to .env.example if used by 
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const isAIStudio = !!process.env.APPLET_ID;
+  const PORT = isAIStudio ? 3000 : (process.env.PORT ? parseInt(process.env.PORT) : 8080);
   const isProd = process.env.NODE_ENV === 'production';
   const distPath = path.join(process.cwd(), 'dist');
+
+  // Fix Firebase Auth popup issues on Cloud Run
+  app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    next();
+  });
 
   app.use(express.json({ limit: '50mb' }));
 

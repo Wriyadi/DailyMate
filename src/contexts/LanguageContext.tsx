@@ -6,6 +6,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  formatNumber: (num: number, maximumFractionDigits?: number) => string;
 }
 
 const translations = {
@@ -227,8 +228,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return translations[language][key as keyof typeof translations['en']] || key;
   };
 
+  const formatNumber = (num: number, maximumFractionDigits: number = 0): string => {
+    return new Intl.NumberFormat(language === 'id' ? 'id-ID' : 'en-US', {
+      maximumFractionDigits
+    }).format(num);
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, formatNumber }}>
       {children}
     </LanguageContext.Provider>
   );
