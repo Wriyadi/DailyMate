@@ -98,16 +98,16 @@ export default function SmartHobby() {
 
     if (activeTab === 'pets') {
       path = 'pets';
-      dataToSave = { ...dataToSave, name: hobbyForm.name, species: hobbyForm.species, birthDate: hobbyForm.birthDate || '' };
+      dataToSave = { ...dataToSave, name: hobbyForm.name || '', species: hobbyForm.species || '', birthDate: hobbyForm.birthDate || '' };
     } else if (activeTab === 'gardening') {
       path = 'plants';
-      dataToSave = { ...dataToSave, name: hobbyForm.name, species: hobbyForm.species, wateringSchedule: Number(hobbyForm.watering) || 1, lastWatered: new Date().toISOString() };
+      dataToSave = { ...dataToSave, name: hobbyForm.name || '', species: hobbyForm.species || '', wateringSchedule: Number(hobbyForm.watering) || 1, lastWatered: new Date().toISOString() };
     } else if (activeTab === 'cooking') {
       path = 'recipes';
-      dataToSave = { ...dataToSave, title: hobbyForm.title, desc: hobbyForm.desc };
+      dataToSave = { ...dataToSave, title: hobbyForm.title || '', desc: hobbyForm.desc || '' };
     } else if (activeTab === 'household') {
       path = 'household_tasks';
-      dataToSave = { ...dataToSave, taskName: hobbyForm.taskName, frequency: hobbyForm.frequency };
+      dataToSave = { ...dataToSave, taskName: hobbyForm.taskName || '', frequency: hobbyForm.frequency || '' };
     }
 
     try {
