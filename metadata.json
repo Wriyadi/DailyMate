@@ -5,8 +5,6 @@
     "camera"
   ],
   "majorCapabilities": [
-    "AI-powered symptom checker",
-    "Smart vehicle maintenance reminders with OCR",
-    "Heath & hobby management"
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
 }

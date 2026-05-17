@@ -17,10 +17,15 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
   const [healthData, setHealthData] = useState<any>(null);
   const [hobbyData, setHobbyData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [randomTipIndex, setRandomTipIndex] = useState(0);
 
   // State Notifikasi
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<string[]>([]);
+
+  useEffect(() => {
+    setRandomTipIndex(Math.floor(Math.random() * 10));
+  }, []);
 
   useEffect(() => {
     const newNotifs: string[] = [];
@@ -229,7 +234,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
       <section className="mt-10">
         <h2 className="mb-4 text-xl font-bold text-stone-900 dark:text-white">{t('quick_tips')}</h2>
         <div className="rounded-3xl bg-neutral-900 dark:bg-emerald-900/30 p-6 text-white dark:text-emerald-50 shadow-xl border border-transparent dark:border-emerald-800/50">
-          <p className="mb-3 text-lg font-medium">Regular check-ups save 20% on maintenance costs.</p>
+          <p className="mb-3 text-lg font-medium">{t(`tip_${randomTipIndex}`)}</p>
           <button className="flex items-center space-x-2 text-sm text-emerald-400 dark:text-emerald-300 font-semibold uppercase tracking-wider">
             <span>{t('learn_more')}</span>
             <ArrowRight size={16} />

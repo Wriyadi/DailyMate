@@ -10,6 +10,8 @@ dotenv.config({ path: '.env.example' }); // Fallback to .env.example if used by 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+  const isProd = process.env.NODE_ENV === 'production';
+  const distPath = path.join(process.cwd(), 'dist');
 
   app.use(express.json({ limit: '50mb' }));
 
@@ -35,15 +37,16 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProd) {
+    console.log('Starting in DEVELOPMENT mode');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
+    console.log('Starting in PRODUCTION mode');
     // Serve static files in production
-    const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
