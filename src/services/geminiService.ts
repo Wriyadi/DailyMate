@@ -32,6 +32,22 @@ export const geminiService = {
     }
   },
 
+  async enhanceRecipeFormat(recipeText: string): Promise<string> {
+    try {
+      const text = await this.requestGemini({
+        model: "gemini-3-flash-preview",
+        config: {
+          systemInstruction: this.getSystemInstruction("You are a master culinary editor. Format the provided recipe beautifully in Markdown. Fix typos, improve structure, and use an appealing tone. Always output in Indonesian, with sections like 'Bahan Utama & Bumbu' and 'Cara Membuat'."),
+        },
+        contents: `Recipe to improve: \n\n${recipeText}`,
+      });
+      return text || recipeText;
+    } catch (error: any) {
+      console.error("Error enhancing recipe format:", error);
+      return recipeText;
+    }
+  },
+
   async extractOdometer(base64Image: string): Promise<number | null> {
     try {
       const text = await this.requestGemini({

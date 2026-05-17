@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
-import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart, X } from 'lucide-react';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart, X, Wand2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -8,6 +8,7 @@ import { geminiService } from '../services/geminiService';
 import { Pet, Plant, Child } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import Markdown from 'react-markdown';
 
 type HobbyTab = 'pets' | 'gardening' | 'cooking' | 'household';
 
@@ -25,8 +26,25 @@ export default function SmartHobby() {
   const [loadingAI, setLoadingAI] = useState(false);
   const [savedRecipes, setSavedRecipes] = useState<{id?: string, title: string, desc: string}[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<{id?: string, title: string, desc: string} | null>(null);
+  const [enhancingRecipe, setEnhancingRecipe] = useState(false);
   const [showHobbyModal, setShowHobbyModal] = useState(false);
   const [hobbyForm, setHobbyForm] = useState<any>({});
+
+  const handleEnhanceRecipe = async () => {
+    if (!selectedRecipe || !selectedRecipe.id) return;
+    setEnhancingRecipe(true);
+    try {
+      const enhancedDesc = await geminiService.enhanceRecipeFormat(selectedRecipe.desc);
+      await updateDoc(doc(db, 'recipes', selectedRecipe.id), {
+        desc: enhancedDesc
+      });
+      setSelectedRecipe(prev => prev ? { ...prev, desc: enhancedDesc } : null);
+    } catch (e: any) {
+      alert("Gagal memperbaiki resep dengan AI.");
+    } finally {
+      setEnhancingRecipe(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -357,7 +375,7 @@ export default function SmartHobby() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl flex flex-col max-h-[80vh]"
+              className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl flex flex-col max-h-[85vh]"
             >
               <div className="flex items-center justify-between p-6 border-b border-stone-100">
                 <h3 className="text-xl font-bold text-stone-900">{selectedRecipe.title}</h3>
@@ -368,8 +386,20 @@ export default function SmartHobby() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="p-6 overflow-y-auto whitespace-pre-wrap text-stone-600 text-sm">
-                {selectedRecipe.desc}
+              <div className="p-6 overflow-y-auto w-full">
+                <div className="prose prose-sm prose-stone max-w-none text-stone-600 leading-relaxed break-words">
+                  <Markdown>{selectedRecipe.desc}</Markdown>
+                </div>
+              </div>
+              <div className="p-4 border-t border-stone-100 bg-stone-50 flex justify-end">
+                <button 
+                  onClick={handleEnhanceRecipe} 
+                  disabled={enhancingRecipe}
+                  className="flex items-center text-sm font-bold py-2 px-4 bg-emerald-100 text-emerald-700 rounded-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <Wand2 size={16} className={cn("mr-2", enhancingRecipe && "animate-spin")} /> 
+                  {enhancingRecipe ? 'Memperbaiki...' : 'Perbaiki Format dengan AI'}
+                </button>
               </div>
             </motion.div>
           </div>
