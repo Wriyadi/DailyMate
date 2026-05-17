@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart, X, Wand2 } from 'lucide-react';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { PawPrint, Leaf, Utensils, Search, Plus, MessageCircle, Calendar, Droplets, Camera, BookOpen, Save, Home, ShoppingCart, X, Wand2, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLanguage } from '../contexts/LanguageContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -130,13 +130,44 @@ export default function SmartHobby() {
     }
 
     try {
-      await addDoc(collection(db, path), dataToSave);
+      if (hobbyForm.id) {
+        await updateDoc(doc(db, path, hobbyForm.id), dataToSave);
+      } else {
+        await addDoc(collection(db, path), dataToSave);
+      }
       setShowHobbyModal(false);
       setHobbyForm({});
-      alert("Added successfully!");
+      
+      // Update selectedRecipe if editing from modal
+      if (activeTab === 'cooking' && hobbyForm.id && selectedRecipe?.id === hobbyForm.id) {
+        setSelectedRecipe({ ...selectedRecipe, title: dataToSave.title, desc: dataToSave.desc });
+      }
     } catch (error) {
       console.error(error);
-      alert("Failed to add.");
+      alert("Gagal menyimpan.");
+    }
+  };
+
+  const handleEditItem = (item: any, collectionName: string) => {
+    // Determine active tab appropriately, though usually we edit from the active tab.
+    let formPayload = { ...item };
+    if (collectionName === 'plants') {
+      formPayload.watering = item.wateringSchedule;
+    }
+    setHobbyForm(formPayload);
+    setShowHobbyModal(true);
+  };
+
+  const handleDeleteItem = async (id: string, collectionName: string) => {
+    if (confirm("Hapus data ini?")) {
+      try {
+        await deleteDoc(doc(db, collectionName, id));
+        if (collectionName === 'recipes' && selectedRecipe?.id === id) {
+          setSelectedRecipe(null);
+        }
+      } catch(e) {
+        alert("Gagal menghapus.");
+      }
     }
   };
 
@@ -209,7 +240,11 @@ export default function SmartHobby() {
               
               <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-none">
                 {activeTab === 'pets' && pets.map(pet => (
-                  <div key={pet.id} className="min-w-[120px] rounded-2xl bg-amber-50 p-3 text-center border border-amber-100">
+                  <div key={pet.id} className="relative min-w-[120px] rounded-2xl bg-amber-50 p-3 text-center border border-amber-100 group">
+                    <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <button onClick={(e) => { e.stopPropagation(); handleEditItem(pet, 'pets'); }} className="p-1.5 rounded-full bg-white text-amber-600 shadow-sm hover:bg-amber-100"><Edit size={12} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(pet.id!, 'pets'); }} className="p-1.5 rounded-full bg-white text-red-600 shadow-sm hover:bg-red-50"><Trash2 size={12} /></button>
+                    </div>
                     <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white text-amber-500">
                       <PawPrint size={24} />
                     </div>
@@ -218,7 +253,11 @@ export default function SmartHobby() {
                   </div>
                 ))}
                 {activeTab === 'gardening' && plants.map(plant => (
-                  <div key={plant.id} className="min-w-[120px] rounded-2xl bg-emerald-50 p-3 text-center border border-emerald-100">
+                  <div key={plant.id} className="relative min-w-[120px] rounded-2xl bg-emerald-50 p-3 text-center border border-emerald-100 group">
+                    <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <button onClick={(e) => { e.stopPropagation(); handleEditItem(plant, 'plants'); }} className="p-1.5 rounded-full bg-white text-emerald-600 shadow-sm hover:bg-emerald-100"><Edit size={12} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(plant.id!, 'plants'); }} className="p-1.5 rounded-full bg-white text-red-600 shadow-sm hover:bg-red-50"><Trash2 size={12} /></button>
+                    </div>
                     <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-500">
                       <Leaf size={24} />
                     </div>
@@ -231,8 +270,12 @@ export default function SmartHobby() {
                     <p className="text-sm font-bold text-stone-900 border-b pb-1 flex items-center"><BookOpen size={16} className="mr-2"/> My Cookbook</p>
                     <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-none">
                       {savedRecipes.map((recipe, idx) => (
-                        <div key={idx} onClick={() => setSelectedRecipe(recipe)} className="min-w-[140px] rounded-2xl bg-rose-50 p-3 shadow-sm border border-rose-100 cursor-pointer hover:bg-rose-100 transition-colors">
-                          <p className="font-bold text-sm text-stone-900 truncate">{recipe.title}</p>
+                        <div key={idx} onClick={() => setSelectedRecipe(recipe)} className="relative min-w-[140px] max-w-[200px] rounded-2xl bg-rose-50 p-3 shadow-sm border border-rose-100 cursor-pointer hover:bg-rose-100 transition-colors group">
+                           <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10">
+                            <button onClick={(e) => { e.stopPropagation(); handleEditItem(recipe, 'recipes'); }} className="p-1.5 rounded-full bg-white text-rose-600 shadow-sm hover:bg-rose-100"><Edit size={12} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(recipe.id!, 'recipes'); }} className="p-1.5 rounded-full bg-white text-red-600 shadow-sm hover:bg-red-50"><Trash2 size={12} /></button>
+                          </div>
+                          <p className="font-bold text-sm text-stone-900 truncate pr-6">{recipe.title}</p>
                           <p className="text-xs text-stone-500 truncate">{recipe.desc}</p>
                         </div>
                       ))}
