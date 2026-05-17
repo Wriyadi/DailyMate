@@ -516,7 +516,7 @@ export default function HealthyLife() {
           <section className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
             <h3 className="mb-4 flex items-center font-bold text-stone-900 border-b pb-2">
               <Baby size={18} className="mr-2 text-blue-500" />
-              Pediatric Health Management
+              {t('pediatric_health_management')}
             </h3>
             
             <div className="flex space-x-3 overflow-x-auto pb-4 scrollbar-none">
@@ -529,9 +529,9 @@ export default function HealthyLife() {
                     selectedChildId === child.id ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-stone-50 text-stone-600 border-stone-100"
                   )}
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">{child.gender}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">{child.gender === 'male' ? t('male') : child.gender === 'female' ? t('female') : t('other')}</p>
                   <p className="font-bold truncate">{child.name}</p>
-                  <p className="text-xs font-medium opacity-80">{child.age} yrs</p>
+                  <p className="text-xs font-medium opacity-80">{child.age} {t('yrs')}</p>
                 </button>
               ))}
               <label 
@@ -539,7 +539,7 @@ export default function HealthyLife() {
                 className="min-w-[120px] cursor-pointer rounded-2xl border-2 border-dashed border-stone-200 flex flex-col items-center justify-center p-4 text-stone-400 hover:bg-stone-50 transition-all"
               >
                  <Plus size={24} />
-                 <span className="text-[10px] font-bold uppercase mt-1">Add Child</span>
+                 <span className="text-[10px] font-bold uppercase mt-1">{t('add_child')}</span>
               </label>
             </div>
 
@@ -552,21 +552,21 @@ export default function HealthyLife() {
                   className="overflow-hidden"
                 >
                   <div className="mt-4 rounded-2xl bg-stone-50 p-4 border border-stone-100 space-y-4">
-                    <h4 className="font-bold text-sm text-stone-900 border-b pb-2">New Child Profile</h4>
+                    <h4 className="font-bold text-sm text-stone-900 border-b pb-2">{t('new_child_profile')}</h4>
                     <div className="grid grid-cols-2 gap-3">
-                      <input type="text" placeholder="Name" value={newChild.name || ''} onChange={e => setNewChild({...newChild, name: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
-                      <input type="number" placeholder="Age" value={newChild.age || ''} onChange={e => setNewChild({...newChild, age: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="text" placeholder={t('name')} value={newChild.name || ''} onChange={e => setNewChild({...newChild, name: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="number" placeholder={t('age')} value={newChild.age || ''} onChange={e => setNewChild({...newChild, age: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
                       <select value={newChild.gender || 'male'} onChange={e => setNewChild({...newChild, gender: e.target.value as any})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100">
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
+                        <option value="male">{t('male')}</option>
+                        <option value="female">{t('female')}</option>
                       </select>
-                      <input type="text" placeholder="Known Allergies" value={newChild.allergies || ''} onChange={e => setNewChild({...newChild, allergies: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
-                      <input type="number" placeholder="Height (cm)" value={newChild.height || ''} onChange={e => setNewChild({...newChild, height: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
-                      <input type="number" placeholder="Weight (kg)" value={newChild.weight || ''} onChange={e => setNewChild({...newChild, weight: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="text" placeholder={t('allergies_placeholder')} value={newChild.allergies || ''} onChange={e => setNewChild({...newChild, allergies: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="number" placeholder={t('height_cm')} value={newChild.height || ''} onChange={e => setNewChild({...newChild, height: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                      <input type="number" placeholder={t('weight_kg')} value={newChild.weight || ''} onChange={e => setNewChild({...newChild, weight: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
                     </div>
                     <div className="flex space-x-2 pt-2">
-                       <button onClick={handleAddChild} className="flex-1 bg-blue-600 text-white py-2 rounded-xl text-sm font-bold shadow-sm active:scale-95">Save</button>
-                       <button onClick={() => setShowChildForm(false)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-2 rounded-xl text-sm font-bold active:scale-95">Cancel</button>
+                       <button onClick={handleAddChild} className="flex-1 bg-blue-600 text-white py-2 rounded-xl text-sm font-bold shadow-sm active:scale-95">{t('save_child')}</button>
+                       <button onClick={() => setShowChildForm(false)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-2 rounded-xl text-sm font-bold active:scale-95">{t('cancel')}</button>
                     </div>
                   </div>
                 </motion.div>
@@ -588,7 +588,7 @@ export default function HealthyLife() {
                   return (
                     <>
                       <div className="flex items-center justify-between border-b pb-2 mb-4">
-                        <h4 className="font-bold text-stone-900 text-lg">{child.name}'s Profile</h4>
+                        <h4 className="font-bold text-stone-900 text-lg">{child.name} - {t('profile')}</h4>
                         <button onClick={handleStartEditChild} className="text-blue-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-blue-50">
                           <Edit2 size={18} />
                         </button>
@@ -596,21 +596,21 @@ export default function HealthyLife() {
 
                       {editingChildId === child.id && (
                         <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100 space-y-4 mb-4">
-                          <h4 className="font-bold text-sm text-stone-900 border-b pb-2">Edit Child Profile</h4>
+                          <h4 className="font-bold text-sm text-stone-900 border-b pb-2">{t('edit_child_profile')}</h4>
                           <div className="grid grid-cols-2 gap-3">
-                            <input type="text" placeholder="Name" value={editChildData.name || ''} onChange={e => setEditChildData({...editChildData, name: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
-                            <input type="number" placeholder="Age" value={editChildData.age || ''} onChange={e => setEditChildData({...editChildData, age: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="text" placeholder={t('name')} value={editChildData.name || ''} onChange={e => setEditChildData({...editChildData, name: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="number" placeholder={t('age')} value={editChildData.age || ''} onChange={e => setEditChildData({...editChildData, age: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
                             <select value={editChildData.gender || 'male'} onChange={e => setEditChildData({...editChildData, gender: e.target.value as any})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100">
-                              <option value="male">Male</option>
-                              <option value="female">Female</option>
+                              <option value="male">{t('male')}</option>
+                              <option value="female">{t('female')}</option>
                             </select>
-                            <input type="text" placeholder="Known Allergies" value={editChildData.allergies || ''} onChange={e => setEditChildData({...editChildData, allergies: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
-                            <input type="number" placeholder="Height (cm)" value={editChildData.height || ''} onChange={e => setEditChildData({...editChildData, height: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
-                            <input type="number" placeholder="Weight (kg)" value={editChildData.weight || ''} onChange={e => setEditChildData({...editChildData, weight: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="text" placeholder={t('allergies_placeholder')} value={editChildData.allergies || ''} onChange={e => setEditChildData({...editChildData, allergies: e.target.value})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="number" placeholder={t('height_cm')} value={editChildData.height || ''} onChange={e => setEditChildData({...editChildData, height: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
+                            <input type="number" placeholder={t('weight_kg')} value={editChildData.weight || ''} onChange={e => setEditChildData({...editChildData, weight: Number(e.target.value)})} className="w-full rounded-xl border-none px-3 py-2 text-sm font-bold bg-white focus:ring-1 focus:ring-blue-100" />
                           </div>
                           <div className="flex space-x-2 pt-2">
-                             <button onClick={handleSaveEditChild} className="flex-1 bg-blue-600 text-white py-2 rounded-xl text-sm font-bold shadow-sm active:scale-95">Save Changes</button>
-                             <button onClick={() => setEditingChildId(null)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-2 rounded-xl text-sm font-bold active:scale-95">Cancel</button>
+                             <button onClick={handleSaveEditChild} className="flex-1 bg-blue-600 text-white py-2 rounded-xl text-sm font-bold shadow-sm active:scale-95">{t('save_changes')}</button>
+                             <button onClick={() => setEditingChildId(null)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-2 rounded-xl text-sm font-bold active:scale-95">{t('cancel')}</button>
                           </div>
                         </div>
                       )}
@@ -618,16 +618,16 @@ export default function HealthyLife() {
                       <div className="rounded-2xl bg-blue-50 p-4 border border-blue-100">
                          <div className="mb-4 flex items-center space-x-2 text-blue-600">
                            <Stethoscope size={18} />
-                           <h4 className="font-bold text-sm">Pediatric Symptoms Triage</h4>
+                           <h4 className="font-bold text-sm">{t('pediatric_symptoms_triage')}</h4>
                          </div>
                          <textarea
                            value={childSymptoms}
                            onChange={e => setChildSymptoms(e.target.value)}
-                           placeholder="e.g. Fever for 1 day, rash on arms..."
+                           placeholder={t('triage_placeholder')}
                            className="mb-4 h-24 w-full rounded-xl bg-white p-4 text-sm outline-none focus:ring-1 focus:ring-blue-200 border-none resize-none placeholder:text-stone-300"
                          />
                          <button onClick={handleChildTriage} disabled={loadingAI || !childSymptoms.trim()} className="w-full rounded-xl bg-blue-600 py-3 font-bold text-white shadow-md active:scale-95 disabled:opacity-50 transition-all text-sm">
-                            {loadingAI ? 'Analyzing...' : 'Analyze Health'}
+                            {loadingAI ? t('analyzing') : t('analyze_health')}
                          </button>
 
                          {childTriageResult && (
@@ -640,7 +640,7 @@ export default function HealthyLife() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100">
                           <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 flex items-center">
-                            <Heart size={10} className="mr-1 text-red-400" /> Vaccination Status
+                            <Heart size={10} className="mr-1 text-red-400" /> {t('vaccination_status')}
                           </p>
                           
                           {parsedVaccines.length > 0 ? (
@@ -656,25 +656,25 @@ export default function HealthyLife() {
                               })}
                             </div>
                           ) : (
-                            <p className="text-xs font-medium text-stone-500 italic mb-3">No data. Generate AI recommendations below.</p>
+                            <p className="text-xs font-medium text-stone-500 italic mb-3">{t('no_data_generate')}</p>
                           )}
                           <button onClick={handleGetVaccines} disabled={loadingVaccines} className="mt-3 w-full rounded-xl bg-white border border-stone-200 py-2 font-bold text-stone-700 text-xs shadow-sm active:scale-95 disabled:opacity-50">
-                            {loadingVaccines ? 'Generating...' : 'Get AI Recommendations'}
+                            {loadingVaccines ? t('generating') : t('get_ai_recommendations')}
                           </button>
                         </div>
                         <div className="rounded-2xl bg-stone-50 p-4 border border-stone-100">
                           <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2 flex items-center">
-                            <Zap size={10} className="mr-1 text-amber-400" /> Milk & Nutrients
+                            <Zap size={10} className="mr-1 text-amber-400" /> {t('milk_nutrients')}
                           </p>
                           {child.nutritionRecommendation ? (
                             <div className="text-xs font-medium text-stone-600 leading-relaxed whitespace-pre-wrap mt-2">
                                {child.nutritionRecommendation}
                             </div>
                           ) : (
-                            <p className="text-xs font-medium text-stone-500 italic mb-3">Get personalized milk & nutrient suggestions based on child profile.</p>
+                            <p className="text-xs font-medium text-stone-500 italic mb-3">{t('nutrition_placeholder')}</p>
                           )}
                           <button onClick={handleGetNutrition} disabled={loadingNutrition} className="mt-3 w-full rounded-xl bg-white border border-stone-200 py-2 font-bold text-stone-700 text-xs shadow-sm active:scale-95 disabled:opacity-50">
-                            {loadingNutrition ? 'Generating...' : 'Get AI Recommendation'}
+                            {loadingNutrition ? t('generating') : t('get_ai_recommendations')}
                           </button>
                         </div>
                       </div>
@@ -733,24 +733,24 @@ export default function HealthyLife() {
           <div className="rounded-3xl bg-neutral-900 p-6 text-white shadow-xl relative overflow-hidden">
              <div className="relative z-10">
                <h3 className="mb-2 flex items-center text-lg font-bold">
-                 <Zap size={20} className="mr-2 text-emerald-400" /> Virtual Health Assistant
+                 <Zap size={20} className="mr-2 text-emerald-400" /> {t('virtual_health_assistant')}
                </h3>
-               <p className="text-sm text-stone-400 mb-6">Compare daily caloric intake with calories burned for personalized insights.</p>
+               <p className="text-sm text-stone-400 mb-6">{t('compare_daily_caloric_intake')}</p>
                
                <div className="grid grid-cols-2 gap-4 mb-6">
                  <div className="bg-white/10 rounded-2xl p-4">
-                   <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Consumed (kcal)</p>
+                   <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t('consumed_kcal')}</p>
                    <input type="number" value={caloriesConsumed || ''} onChange={e => setCaloriesConsumed(parseInt(e.target.value)||0)} className="w-full bg-transparent text-xl font-bold text-white outline-none placeholder:text-stone-600" placeholder="0" />
                  </div>
                  <div className="bg-white/10 rounded-2xl p-4">
-                   <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Burned (kcal)</p>
+                   <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">{t('burned_kcal')}</p>
                    {/* In a real app this would sync via Google Fit. We allow manual entry for demo. */}
                    <input type="number" value={caloriesBurned || ''} onChange={e => setCaloriesBurned(parseInt(e.target.value)||0)} className="w-full bg-transparent text-xl font-bold text-emerald-400 outline-none placeholder:text-stone-600" placeholder="0" />
                  </div>
                </div>
 
                <button onClick={handleGetInsights} disabled={loadingAI || (!caloriesConsumed && !caloriesBurned)} className="w-full rounded-2xl bg-white py-4 font-bold text-neutral-900 shadow-lg active:scale-95 disabled:opacity-50 transition-all">
-                 {loadingAI && !insightResult ? 'Analyzing...' : 'Get Daily Insights'}
+                 {loadingAI && !insightResult ? t('analyzing') : t('get_daily_insights')}
                </button>
              </div>
              <div className="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-emerald-500/20 blur-3xl"></div>
@@ -761,7 +761,7 @@ export default function HealthyLife() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
                 <div className="mb-4 flex items-center text-emerald-600">
                   <MessageSquare size={20} className="mr-2" />
-                  <h4 className="font-bold">Daily Summary</h4>
+                  <h4 className="font-bold">{t('daily_summary')}</h4>
                 </div>
                 <div className="prose prose-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
                   {insightResult}
@@ -773,17 +773,17 @@ export default function HealthyLife() {
           <div className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
              <div className="mb-4 flex items-center space-x-2 text-amber-600">
                <AlertTriangle size={20} />
-               <p className="text-[10px] font-bold uppercase tracking-widest">AI Symptom Checker</p>
+               <p className="text-[10px] font-bold uppercase tracking-widest">{t('ai_symptom_checker')}</p>
              </div>
-             <p className="text-sm text-stone-500 mb-4">Describe your symptoms below for a preliminary analysis.</p>
+             <p className="text-sm text-stone-500 mb-4">{t('describe_your_symptoms')}</p>
              <textarea
                 value={symptoms}
                 onChange={e => setSymptoms(e.target.value)}
-                placeholder="e.g. Headache for 2 days, slightly feverish..."
+                placeholder={t('describe_symptoms_placeholder')}
                 className="mb-4 h-24 w-full rounded-2xl bg-stone-50 p-4 text-sm outline-none focus:ring-2 focus:ring-emerald-200 border-none resize-none"
              />
              <button onClick={handleSymptomCheck} disabled={loadingAI || !symptoms.trim()} className="flex w-full items-center justify-center space-x-2 rounded-2xl bg-emerald-600 py-3 font-bold text-white shadow-lg disabled:opacity-50 active:scale-95 transition-all">
-                {loadingAI && !symptomResult ? 'Analyzing...' : <><Stethoscope size={18} /><span>Check Symptoms</span></>}
+                {loadingAI && !symptomResult ? t('analyzing') : <><Stethoscope size={18} /><span>{t('check_symptoms')}</span></>}
              </button>
 
              {symptomResult && (

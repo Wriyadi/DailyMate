@@ -194,12 +194,12 @@ export default function SmartHobby() {
             <div className="rounded-3xl bg-blue-600 p-6 text-white shadow-xl relative overflow-hidden">
                <div className="relative z-10">
                  <h3 className="mb-2 flex items-center text-lg font-bold">
-                   <ShoppingCart size={20} className="mr-2" /> Household Restocking
+                   <ShoppingCart size={20} className="mr-2" /> {t('household_restocking')}
                  </h3>
-                 <p className="text-sm text-blue-100 mb-6">Smart suggestions based on your family components ({children.length} kids, {pets.length} pets, {plants.length} plants).</p>
+                 <p className="text-sm text-blue-100 mb-6">{t('smart_suggestions_family')} ({children.length} {t('kids')}, {pets.length} {t('pets')}, {plants.length} {t('plants')}).</p>
                  
                  <button onClick={handleGetRestockInsights} disabled={loadingAI} className="w-full rounded-2xl bg-white py-4 font-bold text-blue-600 shadow-lg active:scale-95 disabled:opacity-50 transition-all">
-                   {loadingAI ? 'Calculating Supplies...' : 'Get Restock Suggestions'}
+                   {loadingAI ? t('calculating_supplies') : t('get_restock_suggestions')}
                  </button>
                </div>
                <div className="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-white/20 blur-3xl"></div>
@@ -207,7 +207,7 @@ export default function SmartHobby() {
             
             <div className="flex justify-end mt-4">
               <button onClick={() => setShowHobbyModal(true)} className="flex items-center space-x-2 rounded-xl bg-blue-100 text-blue-600 px-4 py-2 font-bold shadow-sm active:scale-95 transition-all">
-                <Plus size={16} /> <span>Add New Task</span>
+                <Plus size={16} /> <span>{t('add_new_task')}</span>
               </button>
             </div>
 
@@ -216,7 +216,7 @@ export default function SmartHobby() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
                    <div className="mb-4 flex items-center text-blue-600">
                      <MessageCircle size={20} className="mr-2" />
-                     <h4 className="font-bold">Supplies Checklist</h4>
+                     <h4 className="font-bold">{t('supplies_checklist')}</h4>
                    </div>
                    <div className="prose prose-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
                      {restockResult}
@@ -323,17 +323,17 @@ export default function SmartHobby() {
                     )}
                     {activeTab === 'household' && (
                       <div className="space-y-3">
-                        <input type="text" placeholder="Task Name (e.g. Change Filters)" value={hobbyForm.taskName || ''} onChange={e => setHobbyForm({...hobbyForm, taskName: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200" />
-                        <input type="text" placeholder="Frequency (e.g. Weekly, Monthly)" value={hobbyForm.frequency || ''} onChange={e => setHobbyForm({...hobbyForm, frequency: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200" />
+                        <input type="text" placeholder={t('task_name_placeholder')} value={hobbyForm.taskName || ''} onChange={e => setHobbyForm({...hobbyForm, taskName: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200" />
+                        <input type="text" placeholder={t('frequency_placeholder')} value={hobbyForm.frequency || ''} onChange={e => setHobbyForm({...hobbyForm, frequency: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200" />
                       </div>
                     )}
 
                     <div className="flex space-x-3 pt-2">
                        <button onClick={handleSaveHobby} className={`flex-1 text-white py-3 rounded-xl font-bold shadow-sm active:scale-95 transition-all
                          ${activeTab === 'pets' ? 'bg-amber-500' : activeTab === 'gardening' ? 'bg-emerald-500' : activeTab === 'cooking' ? 'bg-rose-500' : 'bg-blue-600'}`}>
-                         Save
+                         {t('save')}
                        </button>
-                       <button onClick={() => setShowHobbyModal(false)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-3 rounded-xl font-bold active:scale-95 transition-all">Cancel</button>
+                       <button onClick={() => setShowHobbyModal(false)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-3 rounded-xl font-bold active:scale-95 transition-all">{t('cancel')}</button>
                     </div>
                   </div>
                 </motion.div>
