@@ -699,11 +699,11 @@ export default function HealthyLife() {
              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-500">
                 <Camera size={32} />
              </div>
-             <h3 className="text-lg font-bold">Smart Nutrition Tracker</h3>
-             <p className="text-sm text-stone-500 mb-6 mt-2">Take a picture of your meal. We'll estimate calories and carbs, then suggest additions to balance your diet.</p>
+             <h3 className="text-lg font-bold">{t('smart_nutrition_tracker')}</h3>
+             <p className="text-sm text-stone-500 mb-6 mt-2">{t('nutrition_tracker_desc')}</p>
              
              <label className="relative flex w-full cursor-pointer items-center justify-center space-x-2 rounded-2xl bg-blue-600 py-4 font-bold text-white shadow-lg transition-all active:scale-95">
-                {loadingAI && !mealResult ? 'Analyzing Meal...' : <><Camera size={20} /><span>Upload Meal Photo</span></>}
+                {loadingAI && !mealResult ? t('analyzing_meal') : <><Camera size={20} /><span>{t('upload_meal_photo')}</span></>}
                 <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleMealOCR} disabled={loadingAI} />
              </label>
           </div>
@@ -717,7 +717,7 @@ export default function HealthyLife() {
               >
                 <div className="mb-4 flex items-center text-blue-700">
                   <MessageSquare size={20} className="mr-2" />
-                  <h4 className="font-bold">Nutrition Insights</h4>
+                  <h4 className="font-bold">{t('nutrition_insights')}</h4>
                 </div>
                 <div className="prose prose-sm text-blue-900 leading-relaxed whitespace-pre-wrap font-medium">
                   {mealResult}

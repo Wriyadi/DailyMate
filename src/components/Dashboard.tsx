@@ -54,9 +54,9 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
             const vehicle = vSnapshot.docs[0].data() as Vehicle;
             const nextService = vehicle.lastServiceMileage + vehicle.maintenanceInterval;
             const diff = nextService - vehicle.odometer;
-            const status = diff > 0 ? `in ${diff} km` : `${Math.abs(diff)} km overdue`;
+            const status = diff > 0 ? t('service_in').replace('{km}', diff.toString()) : t('service_overdue').replace('{km}', Math.abs(diff).toString());
             setVehicleData({
-              display: `${vehicle.name}: Service ${status}`,
+              display: `${vehicle.name}: ${t('service')} ${status}`,
               name: vehicle.name,
               nextService: diff
             });
@@ -85,7 +85,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
             if (profile.height && profile.weight) {
               const heightInMeters = profile.height / 100;
               const bmi = (profile.weight / (heightInMeters * heightInMeters)).toFixed(1);
-              displayStr = `Current BMI: ${bmi} kg/m²`;
+              displayStr = `${t('current_bmi')}: ${bmi} kg/m²`;
             }
           }
           
@@ -110,7 +110,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (tab: any) => vo
 
           if (!petsSnap.empty || !plantsSnap.empty) {
             setHobbyData({
-              display: `Managing ${petsSnap.size} pets & ${plantsSnap.size} plants`,
+              display: t('managing_pets_plants').replace('{pets}', petsSnap.size.toString()).replace('{plants}', plantsSnap.size.toString()),
               hasTaskToday: true
             });
           } else {

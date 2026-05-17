@@ -148,6 +148,16 @@ const translations = {
     'describe_your_symptoms': 'Describe your symptoms below for a preliminary analysis.',
     'describe_symptoms_placeholder': 'e.g. Headache for 2 days, slightly feverish...',
     'check_symptoms': 'Check Symptoms',
+    'service_in': 'in {km} km',
+    'service_overdue': '{km} km overdue',
+    'service': 'Service',
+    'current_bmi': 'Current BMI',
+    'managing_pets_plants': 'Managing {pets} pets & {plants} plants',
+    'smart_nutrition_tracker': 'Smart Nutrition Tracker',
+    'nutrition_tracker_desc': 'Take a picture of your meal. We\'ll estimate calories and carbs, then suggest additions to balance your diet.',
+    'upload_meal_photo': 'Upload Meal Photo',
+    'analyzing_meal': 'Analyzing Meal...',
+    'nutrition_insights': 'Nutrition Insights',
   },
   id: {
     'home': 'Beranda',
@@ -287,6 +297,16 @@ const translations = {
     'describe_your_symptoms': 'Jelaskan gejala Anda di bawah untuk analisis awal.',
     'describe_symptoms_placeholder': 'mis. Sakit kepala selama 2 hari, sedikit demam...',
     'check_symptoms': 'Periksa Gejala',
+    'service_in': 'dalam {km} km',
+    'service_overdue': 'lewat {km} km',
+    'service': 'Servis',
+    'current_bmi': 'BMI Saat Ini',
+    'managing_pets_plants': 'Mengelola {pets} hewan & {plants} tanaman',
+    'smart_nutrition_tracker': 'Pelacak Nutrisi Cerdas',
+    'nutrition_tracker_desc': 'Ambil foto makanan Anda. Kami akan memperkirakan kalori dan karbohidrat, lalu menyarankan tambahan untuk menyeimbangkan diet Anda.',
+    'upload_meal_photo': 'Unggah Foto Makanan',
+    'analyzing_meal': 'Menganalisis Makanan...',
+    'nutrition_insights': 'Wawasan Nutrisi',
   }
 };
 
