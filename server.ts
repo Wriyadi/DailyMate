@@ -17,17 +17,35 @@ async function startServer() {
 
   // API Route for Gemini
   app.post('/api/gemini', async (req, res) => {
+    console.log('[API] Received Gemini request');
     try {
       const apiKey = process.env.GEMINI_API_KEY?.trim();
       if (!apiKey || apiKey === 'your_api_key_here' || apiKey === 'YOUR_API_KEY') {
+        console.error('[API] Missing Gemini API Key');
         return res.status(500).json({ error: 'API key is missing or invalid. Please check your Applet Settings.' });
       }
-      const ai = new GoogleGenAI({ apiKey });
+
+      const ai = new GoogleGenAI({ 
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          }
+        }
+      });
+
       const { model, config, contents } = req.body;
+      console.log(`[API] Calling model: ${model}`);
+
       const response = await ai.models.generateContent({ model, config, contents });
+      
+      if (!response.text) {
+        console.warn('[API] Empty response from Gemini');
+      }
+
       res.json({ text: response.text });
     } catch (e: any) {
-      console.error(e);
+      console.error('[API] Gemini Error:', e);
       // Improve the error message for invalid API key
       if (e.message && e.message.includes('API key not valid')) {
         return res.status(401).json({ error: 'API key is invalid. Please check your Applet Settings.' });

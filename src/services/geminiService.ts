@@ -6,17 +6,30 @@ export const geminiService = {
   },
 
   async requestGemini(body: any): Promise<string | null> {
-    const res = await fetch('/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to fetch Gemini API');
+    try {
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        let errorMsg = 'Failed to fetch Gemini API';
+        try {
+          const err = await res.json();
+          errorMsg = err.error || errorMsg;
+        } catch (e) {
+          errorMsg = `Server error: ${res.status} ${res.statusText}`;
+        }
+        throw new Error(errorMsg);
+      }
+      const data = await res.json();
+      return data.text;
+    } catch (error: any) {
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        throw new Error('Network error: Could not reach the server. Please check your connection or if the server is running.');
+      }
+      throw error;
     }
-    const data = await res.json();
-    return data.text;
   },
 
   async extractOdometer(base64Image: string): Promise<number | null> {
