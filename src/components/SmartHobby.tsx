@@ -196,7 +196,7 @@ export default function SmartHobby() {
                  <h3 className="mb-2 flex items-center text-lg font-bold">
                    <ShoppingCart size={20} className="mr-2" /> {t('household_restocking')}
                  </h3>
-                 <p className="text-sm text-blue-100 mb-6">{t('smart_suggestions_family')} ({children.length} {t('kids')}, {pets.length} {t('pets')}, {plants.length} {t('plants')}).</p>
+                 <p className="text-sm text-blue-100 mb-6">{t('smart_suggestions_family')} ({children.length} {t('kids')}, {pets.length} {t('list_pets')}, {plants.length} {t('plants')}).</p>
                  
                  <button onClick={handleGetRestockInsights} disabled={loadingAI} className="w-full rounded-2xl bg-white py-4 font-bold text-blue-600 shadow-lg active:scale-95 disabled:opacity-50 transition-all">
                    {loadingAI ? t('calculating_supplies') : t('get_restock_suggestions')}
@@ -206,19 +206,19 @@ export default function SmartHobby() {
             </div>
             
             <div className="flex justify-end mt-4">
-              <button onClick={() => setShowHobbyModal(true)} className="flex items-center space-x-2 rounded-xl bg-blue-100 text-blue-600 px-4 py-2 font-bold shadow-sm active:scale-95 transition-all">
+              <button onClick={() => setShowHobbyModal(true)} className="flex items-center space-x-2 rounded-xl bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-4 py-2 font-bold shadow-sm active:scale-95 transition-all">
                 <Plus size={16} /> <span>{t('add_new_task')}</span>
               </button>
             </div>
 
             <AnimatePresence>
               {restockResult && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
-                   <div className="mb-4 flex items-center text-blue-600">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-white dark:bg-neutral-900 p-6 shadow-sm border border-stone-100 dark:border-neutral-800">
+                   <div className="mb-4 flex items-center text-blue-600 dark:text-blue-400">
                      <MessageCircle size={20} className="mr-2" />
                      <h4 className="font-bold">{t('supplies_checklist')}</h4>
                    </div>
-                   <div className="prose prose-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
+                   <div className="prose prose-sm text-stone-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
                      {restockResult}
                    </div>
                 </motion.div>
@@ -228,58 +228,58 @@ export default function SmartHobby() {
         ) : (
           <>
             {/* Module-specific overview */}
-            <section className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100">
+            <section className="rounded-3xl bg-white dark:bg-neutral-900 p-6 shadow-sm border border-stone-100 dark:border-neutral-800">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold text-stone-900 border-b pb-1">
+                <h3 className="font-bold text-stone-900 dark:text-white border-b border-stone-100 dark:border-neutral-800 pb-1">
                   {activeTab === 'pets' ? t('my_pets') : activeTab === 'gardening' ? t('my_garden') : t('culinary_assistant')}
                 </h3>
-                <button onClick={() => setShowHobbyModal(true)} className="h-8 w-8 rounded-lg bg-stone-100 text-stone-600 flex items-center justify-center active:scale-90 transition-all hover:bg-stone-200">
+                <button onClick={() => setShowHobbyModal(true)} className="h-8 w-8 rounded-lg bg-stone-100 dark:bg-neutral-800 text-stone-600 dark:text-neutral-300 flex items-center justify-center active:scale-90 transition-all hover:bg-stone-200 dark:hover:bg-neutral-700">
                   <Plus size={16} />
                 </button>
               </div>
               
               <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-none">
                 {activeTab === 'pets' && pets.map(pet => (
-                  <div key={pet.id} className="relative min-w-[120px] rounded-2xl bg-amber-50 p-3 text-center border border-amber-100 group">
+                  <div key={pet.id} className="relative min-w-[120px] rounded-2xl bg-amber-50 dark:bg-amber-950/20 p-3 text-center border border-amber-100 dark:border-amber-800/30 group text-stone-900 dark:text-white">
                     <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); handleEditItem(pet, 'pets'); }} className="p-1.5 rounded-full bg-white text-amber-600 shadow-sm hover:bg-amber-100"><Edit size={12} /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(pet.id!, 'pets'); }} className="p-1.5 rounded-full bg-white text-red-600 shadow-sm hover:bg-red-50"><Trash2 size={12} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleEditItem(pet, 'pets'); }} className="p-1.5 rounded-full bg-white dark:bg-neutral-800 text-amber-600 dark:text-amber-400 shadow-sm hover:bg-amber-100 dark:hover:bg-neutral-700"><Edit size={12} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(pet.id!, 'pets'); }} className="p-1.5 rounded-full bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 shadow-sm hover:bg-red-50 dark:hover:bg-red-950/40"><Trash2 size={12} /></button>
                     </div>
-                    <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white text-amber-500">
+                    <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-neutral-800 text-amber-500">
                       <PawPrint size={24} />
                     </div>
-                    <p className="text-sm font-bold">{pet.name}</p>
-                    <p className="text-[10px] uppercase font-bold text-amber-400">{pet.species}</p>
+                    <p className="text-sm font-bold text-stone-900 dark:text-white">{pet.name}</p>
+                    <p className="text-[10px] uppercase font-bold text-amber-400 dark:text-amber-300">{pet.species}</p>
                   </div>
                 ))}
                 {activeTab === 'gardening' && plants.map(plant => (
-                  <div key={plant.id} className="relative min-w-[120px] rounded-2xl bg-emerald-50 p-3 text-center border border-emerald-100 group">
+                  <div key={plant.id} className="relative min-w-[120px] rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 p-3 text-center border border-emerald-100 dark:border-emerald-800/30 group text-stone-900 dark:text-white">
                     <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <button onClick={(e) => { e.stopPropagation(); handleEditItem(plant, 'plants'); }} className="p-1.5 rounded-full bg-white text-emerald-600 shadow-sm hover:bg-emerald-100"><Edit size={12} /></button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(plant.id!, 'plants'); }} className="p-1.5 rounded-full bg-white text-red-600 shadow-sm hover:bg-red-50"><Trash2 size={12} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleEditItem(plant, 'plants'); }} className="p-1.5 rounded-full bg-white dark:bg-neutral-800 text-emerald-600 dark:text-emerald-400 shadow-sm hover:bg-emerald-100 dark:hover:bg-neutral-700"><Edit size={12} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(plant.id!, 'plants'); }} className="p-1.5 rounded-full bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 shadow-sm hover:bg-red-50 dark:hover:bg-red-950/40"><Trash2 size={12} /></button>
                     </div>
-                    <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-500">
+                    <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-neutral-800 text-emerald-500">
                       <Leaf size={24} />
                     </div>
-                    <p className="text-sm font-bold">{plant.name}</p>
-                    <p className="text-[10px] uppercase font-bold text-emerald-400">{plant.species}</p>
+                    <p className="text-sm font-bold text-stone-900 dark:text-white">{plant.name}</p>
+                    <p className="text-[10px] uppercase font-bold text-emerald-400 dark:text-emerald-300">{plant.species}</p>
                   </div>
                 ))}
                 {activeTab === 'cooking' && (
                   <div className="flex w-full flex-col space-y-2 pb-2">
-                    <p className="text-sm font-bold text-stone-900 border-b pb-1 flex items-center"><BookOpen size={16} className="mr-2"/> My Cookbook</p>
+                    <p className="text-sm font-bold text-stone-900 dark:text-white border-b border-stone-100 dark:border-neutral-805 pb-1 flex items-center"><BookOpen size={16} className="mr-2"/> My Cookbook</p>
                     <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-none">
                       {savedRecipes.map((recipe, idx) => (
-                        <div key={idx} onClick={() => setSelectedRecipe(recipe)} className="relative min-w-[140px] max-w-[200px] rounded-2xl bg-rose-50 p-3 shadow-sm border border-rose-100 cursor-pointer hover:bg-rose-100 transition-colors group">
+                        <div key={idx} onClick={() => setSelectedRecipe(recipe)} className="relative min-w-[140px] max-w-[200px] rounded-2xl bg-rose-50 dark:bg-rose-950/20 p-3 shadow-sm border border-rose-100 dark:border-rose-800/30 cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-950/40 transition-colors group">
                            <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10">
-                            <button onClick={(e) => { e.stopPropagation(); handleEditItem(recipe, 'recipes'); }} className="p-1.5 rounded-full bg-white text-rose-600 shadow-sm hover:bg-rose-100"><Edit size={12} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(recipe.id!, 'recipes'); }} className="p-1.5 rounded-full bg-white text-red-600 shadow-sm hover:bg-red-50"><Trash2 size={12} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); handleEditItem(recipe, 'recipes'); }} className="p-1.5 rounded-full bg-white dark:bg-neutral-800 text-rose-600 dark:text-rose-400 shadow-sm hover:bg-rose-100 dark:hover:bg-neutral-700"><Edit size={12} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(recipe.id!, 'recipes'); }} className="p-1.5 rounded-full bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 shadow-sm hover:bg-rose-50 dark:hover:bg-red-950/40"><Trash2 size={12} /></button>
                           </div>
-                          <p className="font-bold text-sm text-stone-900 truncate pr-6">{recipe.title}</p>
-                          <p className="text-xs text-stone-500 truncate">{recipe.desc}</p>
+                          <p className="font-bold text-sm text-stone-900 dark:text-white truncate pr-6">{recipe.title}</p>
+                          <p className="text-xs text-stone-500 dark:text-neutral-400 truncate">{recipe.desc}</p>
                         </div>
                       ))}
-                      <div onClick={() => setShowHobbyModal(true)} className="min-w-[100px] flex items-center justify-center rounded-2xl border-2 border-dashed border-stone-200 text-stone-400 cursor-pointer hover:bg-stone-50 transition-all active:scale-95">
+                      <div onClick={() => setShowHobbyModal(true)} className="min-w-[100px] flex items-center justify-center rounded-2xl border-2 border-dashed border-stone-200 dark:border-neutral-800 text-stone-400 dark:text-neutral-500 cursor-pointer hover:bg-stone-50 dark:hover:bg-neutral-800/50 transition-all active:scale-95">
                         <Plus size={24} />
                       </div>
                     </div>
@@ -296,35 +296,35 @@ export default function SmartHobby() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-4 rounded-3xl bg-white p-6 shadow-sm border border-stone-100 space-y-4">
-                    <h4 className="font-bold text-lg text-stone-900 border-b pb-2">
+                  <div className="mt-4 rounded-3xl bg-white dark:bg-neutral-900 p-6 shadow-sm border border-stone-100 dark:border-neutral-800 space-y-4">
+                    <h4 className="font-bold text-lg text-stone-900 dark:text-white border-b border-stone-100 dark:border-neutral-800 pb-2">
                        Add New {activeTab === 'pets' ? 'Pet' : activeTab === 'gardening' ? 'Plant' : activeTab === 'cooking' ? 'Recipe' : 'Task'}
                     </h4>
                     
                     {activeTab === 'pets' && (
                       <div className="space-y-3">
-                        <input type="text" placeholder="Pet Name" value={hobbyForm.name || ''} onChange={e => setHobbyForm({...hobbyForm, name: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-amber-200" />
-                        <input type="text" placeholder="Species (e.g. Dog, Cat)" value={hobbyForm.species || ''} onChange={e => setHobbyForm({...hobbyForm, species: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-amber-200" />
-                        <input type="date" value={hobbyForm.birthDate || ''} onChange={e => setHobbyForm({...hobbyForm, birthDate: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-amber-200 text-stone-500" />
+                        <input type="text" placeholder="Pet Name" value={hobbyForm.name || ''} onChange={e => setHobbyForm({...hobbyForm, name: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-amber-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
+                        <input type="text" placeholder="Species (e.g. Dog, Cat)" value={hobbyForm.species || ''} onChange={e => setHobbyForm({...hobbyForm, species: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-amber-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
+                        <input type="date" value={hobbyForm.birthDate || ''} onChange={e => setHobbyForm({...hobbyForm, birthDate: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-amber-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
                       </div>
                     )}
                     {activeTab === 'gardening' && (
                       <div className="space-y-3">
-                        <input type="text" placeholder="Plant Name" value={hobbyForm.name || ''} onChange={e => setHobbyForm({...hobbyForm, name: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-emerald-200" />
-                        <input type="text" placeholder="Species (e.g. Monstera)" value={hobbyForm.species || ''} onChange={e => setHobbyForm({...hobbyForm, species: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-emerald-200" />
-                        <input type="number" placeholder="Watering Schedule (days)" value={hobbyForm.watering || ''} onChange={e => setHobbyForm({...hobbyForm, watering: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-emerald-200" />
+                        <input type="text" placeholder="Plant Name" value={hobbyForm.name || ''} onChange={e => setHobbyForm({...hobbyForm, name: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-emerald-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
+                        <input type="text" placeholder="Species (e.g. Monstera)" value={hobbyForm.species || ''} onChange={e => setHobbyForm({...hobbyForm, species: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-emerald-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
+                        <input type="number" placeholder="Watering Schedule (days)" value={hobbyForm.watering || ''} onChange={e => setHobbyForm({...hobbyForm, watering: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-emerald-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
                       </div>
                     )}
                     {activeTab === 'cooking' && (
                       <div className="space-y-3">
-                        <input type="text" placeholder="Recipe Title" value={hobbyForm.title || ''} onChange={e => setHobbyForm({...hobbyForm, title: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-rose-200" />
-                        <textarea placeholder="Short Description..." value={hobbyForm.desc || ''} onChange={e => setHobbyForm({...hobbyForm, desc: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-rose-200 resize-none h-24" />
+                        <input type="text" placeholder="Recipe Title" value={hobbyForm.title || ''} onChange={e => setHobbyForm({...hobbyForm, title: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-rose-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
+                        <textarea placeholder="Short Description..." value={hobbyForm.desc || ''} onChange={e => setHobbyForm({...hobbyForm, desc: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-rose-200 resize-none h-24 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
                       </div>
                     )}
-                    {activeTab === 'household' && (
+                    {(activeTab as string) === 'household' && (
                       <div className="space-y-3">
-                        <input type="text" placeholder={t('task_name_placeholder')} value={hobbyForm.taskName || ''} onChange={e => setHobbyForm({...hobbyForm, taskName: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200" />
-                        <input type="text" placeholder={t('frequency_placeholder')} value={hobbyForm.frequency || ''} onChange={e => setHobbyForm({...hobbyForm, frequency: e.target.value})} className="w-full rounded-xl bg-stone-50 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200" />
+                        <input type="text" placeholder={t('task_name_placeholder')} value={hobbyForm.taskName || ''} onChange={e => setHobbyForm({...hobbyForm, taskName: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
+                        <input type="text" placeholder={t('frequency_placeholder')} value={hobbyForm.frequency || ''} onChange={e => setHobbyForm({...hobbyForm, frequency: e.target.value})} className="w-full rounded-xl bg-stone-50 dark:bg-neutral-800 border-none px-4 py-3 font-bold focus:ring-2 focus:ring-blue-200 text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-neutral-500" />
                       </div>
                     )}
 
@@ -333,7 +333,7 @@ export default function SmartHobby() {
                          ${activeTab === 'pets' ? 'bg-amber-500' : activeTab === 'gardening' ? 'bg-emerald-500' : activeTab === 'cooking' ? 'bg-rose-500' : 'bg-blue-600'}`}>
                          {t('save')}
                        </button>
-                       <button onClick={() => setShowHobbyModal(false)} className="flex-1 bg-white text-stone-600 border border-stone-200 py-3 rounded-xl font-bold active:scale-95 transition-all">{t('cancel')}</button>
+                       <button onClick={() => setShowHobbyModal(false)} className="flex-1 bg-white dark:bg-neutral-800 text-stone-600 dark:text-neutral-300 border border-stone-200 dark:border-neutral-700 py-3 rounded-xl font-bold active:scale-95 transition-all hover:bg-stone-50 dark:hover:bg-neutral-700">{t('cancel')}</button>
                     </div>
                   </div>
                 </motion.div>
@@ -385,16 +385,16 @@ export default function SmartHobby() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="rounded-3xl bg-white p-6 shadow-sm border border-stone-100"
+                  className="rounded-3xl bg-white dark:bg-neutral-900 p-6 shadow-sm border border-stone-100 dark:border-neutral-800"
                 >
                   {activeTab === 'cooking' && (
                     <div className="mb-4 flex justify-end">
-                      <button onClick={saveCurrentRecipe} className="flex items-center text-xs font-bold py-2 px-3 bg-rose-50 text-rose-600 rounded-xl active:scale-95">
+                      <button onClick={saveCurrentRecipe} className="flex items-center text-xs font-bold py-2 px-3 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-xl active:scale-95">
                         <Save size={14} className="mr-1"/> Save to Cookbook
                       </button>
                     </div>
                   )}
-                  <div className="prose prose-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
+                  <div className="prose prose-sm text-stone-600 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
                     {aiResult}
                   </div>
                 </motion.div>
@@ -418,27 +418,27 @@ export default function SmartHobby() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl flex flex-col max-h-[85vh]"
+              className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white dark:bg-neutral-900 shadow-2xl flex flex-col max-h-[85vh] border border-stone-150 dark:border-neutral-800"
             >
-              <div className="flex items-center justify-between p-6 border-b border-stone-100">
-                <h3 className="text-xl font-bold text-stone-900">{selectedRecipe.title}</h3>
+              <div className="flex items-center justify-between p-6 border-b border-stone-100 dark:border-neutral-800">
+                <h3 className="text-xl font-bold text-stone-900 dark:text-white">{selectedRecipe.title}</h3>
                 <button
                   onClick={() => setSelectedRecipe(null)}
-                  className="rounded-full p-2 text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors"
+                  className="rounded-full p-2 text-stone-400 hover:bg-stone-50 dark:hover:bg-neutral-800 hover:text-stone-600 dark:hover:text-neutral-200 transition-colors"
                 >
                   <X size={20} />
                 </button>
               </div>
               <div className="p-6 overflow-y-auto w-full">
-                <div className="prose prose-sm prose-stone max-w-none text-stone-600 leading-relaxed break-words">
+                <div className="prose prose-sm prose-stone dark:prose-invert max-w-none text-stone-600 dark:text-neutral-300 leading-relaxed break-words">
                   <Markdown>{selectedRecipe.desc}</Markdown>
                 </div>
               </div>
-              <div className="p-4 border-t border-stone-100 bg-stone-50 flex justify-end">
+              <div className="p-4 border-t border-stone-100 dark:border-neutral-800 bg-stone-50 dark:bg-neutral-950 flex justify-end">
                 <button 
                   onClick={handleEnhanceRecipe} 
                   disabled={enhancingRecipe}
-                  className="flex items-center text-sm font-bold py-2 px-4 bg-emerald-100 text-emerald-700 rounded-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center text-sm font-bold py-2 px-4 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <Wand2 size={16} className={cn("mr-2", enhancingRecipe && "animate-spin")} /> 
                   {enhancingRecipe ? 'Memperbaiki...' : 'Perbaiki Format dengan AI'}
@@ -454,10 +454,10 @@ export default function SmartHobby() {
 
 function HobbyTabBtn({ icon, active, label, onClick, color }: any) {
   const colors = {
-    amber: active ? "bg-amber-500 text-white shadow-amber-200" : "bg-white text-stone-400",
-    emerald: active ? "bg-emerald-500 text-white shadow-emerald-200" : "bg-white text-stone-400",
-    rose: active ? "bg-rose-500 text-white shadow-rose-200" : "bg-white text-stone-400",
-    blue: active ? "bg-blue-600 text-white shadow-blue-200" : "bg-white text-stone-400",
+    amber: active ? "bg-amber-500 text-white shadow-amber-200" : "bg-white dark:bg-neutral-900 border border-transparent dark:border-neutral-800/80 text-stone-400 dark:text-neutral-400",
+    emerald: active ? "bg-emerald-500 text-white shadow-emerald-200" : "bg-white dark:bg-neutral-900 border border-transparent dark:border-neutral-800/80 text-stone-400 dark:text-neutral-400",
+    rose: active ? "bg-rose-500 text-white shadow-rose-200" : "bg-white dark:bg-neutral-900 border border-transparent dark:border-neutral-800/80 text-stone-400 dark:text-neutral-400",
+    blue: active ? "bg-blue-600 text-white shadow-blue-200" : "bg-white dark:bg-neutral-900 border border-transparent dark:border-neutral-800/80 text-stone-400 dark:text-neutral-400",
   };
 
   return (
