@@ -1,6 +1,7 @@
 export type VehicleType = 'car' | 'motorcycle';
 export type FuelType = 'gasoline' | 'diesel';
 export type Transmission = 'automatic' | 'manual';
+export type OilType = 'mineral' | 'semi_synthetic' | 'full_synthetic';
 
 export interface Vehicle {
   id?: string;
@@ -14,6 +15,7 @@ export interface Vehicle {
   lastServiceMileage: number;
   lastServiceDate: string;
   maintenanceInterval: number;
+  oilType?: OilType;
 }
 
 export interface ServiceLog {
@@ -22,6 +24,7 @@ export interface ServiceLog {
   mileage: number;
   description: string;
   costRupiah: number;
+  oilType?: OilType;
 }
 
 export type HealthLogType = 'bmi' | 'cycle' | 'symptom' | 'exercise' | 'meal' | 'vaccination' | 'pediatric_triage';
